@@ -77,7 +77,10 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.info, color: iconColor),
             title: Text('About'),
-            onTap: () async => await showAboutAppDialog(context),
+            onTap: () async {
+              Navigator.pop(context);
+              await showAboutAppDialog(context);
+            },
           ),
         ],
       ),
