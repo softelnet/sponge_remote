@@ -68,7 +68,7 @@ Future<void> showAboutAppDialog(BuildContext context) async {
           ),
           LinkTextSpan(
             style: linkStyle,
-            url: 'https://github.com/softelnet/sponge_flutter_client',
+            url: 'https://github.com/softelnet/sponge_remote',
             text: 'GitHub repo',
           ),
           TextSpan(
