@@ -1,0 +1,3 @@
+= Sponge Remote mobile application
+
+This is a source code repository for the open source https://sponge.openksavi.org/mobile[Sponge Remote] mobile application.
