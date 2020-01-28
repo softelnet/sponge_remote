@@ -59,32 +59,23 @@ class SpongeFlutterApp extends StatelessWidget {
             ),
           );
         } else if (snapshot.hasError) {
-          return _buildApp(Center(
-              child: ErrorPanelWidget(
-            error: snapshot.error,
-          )));
+          return _buildApp(
+            child: Center(
+              child: ErrorPanelWidget(error: snapshot.error),
+            ),
+          );
         }
 
         return _buildApp(
-          Container(
-            color: Colors.teal,
-          ),
+          child: Container(color: Colors.teal),
         );
       },
     );
   }
 
-  Widget _buildApp(Widget child) {
+  Widget _buildApp({@required Widget child}) {
     return MaterialApp(
       title: APPLICATION_NAME,
-      // theme: ThemeData(
-      //   brightness:
-      //       service.settings.isDarkMode ? Brightness.dark : Brightness.light,
-      //   primarySwatch: Colors.teal,
-      // ),
-      //initialRoute: DefaultRoutes.ACTIONS,
-      //routes: widgetsFactory.createRoutes(),
-      //onGenerateRoute: router.generator,
       home: child,
       debugShowCheckedModeBanner: false,
     );
