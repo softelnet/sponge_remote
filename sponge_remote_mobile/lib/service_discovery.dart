@@ -68,23 +68,32 @@ Stream<DiscoveredService> discoverServices(
           timeout: timeout)) {
         var properties = await _readServiceProperties(txt.text);
 
-        var newService = DiscoveredService(
-          domainName: ptr.domainName,
-          uuid:
-              properties[SpongeClientConstants.SERVICE_DISCOVERY_PROPERTY_UUID],
-          name:
-              properties[SpongeClientConstants.SERVICE_DISCOVERY_PROPERTY_NAME],
-          url: properties[SpongeClientConstants.SERVICE_DISCOVERY_PROPERTY_URL],
-          network: wifiName,
-        );
+        var uuid =
+            properties[SpongeClientConstants.SERVICE_DISCOVERY_PROPERTY_UUID];
+        var name =
+            properties[SpongeClientConstants.SERVICE_DISCOVERY_PROPERTY_NAME];
+        var url =
+            properties[SpongeClientConstants.SERVICE_DISCOVERY_PROPERTY_URL];
 
-        if (!services.containsKey(newService.uuid)) {
-          services[newService.uuid] = newService;
+        if ((uuid?.isNotEmpty ?? false) &&
+            (name?.isNotEmpty ?? false) &&
+            (url?.isNotEmpty ?? false)) {
+          var newService = DiscoveredService(
+            domainName: ptr.domainName,
+            uuid: uuid,
+            name: name,
+            url: url,
+            network: wifiName,
+          );
 
-          _logger.fine(
-              'Found service \'${newService.name}\' at ${newService.url}');
+          if (!services.containsKey(newService.uuid)) {
+            services[newService.uuid] = newService;
 
-          yield newService;
+            _logger.fine(
+                'Found service \'${newService.name}\' at ${newService.url}');
+
+            yield newService;
+          }
         }
       }
     }
