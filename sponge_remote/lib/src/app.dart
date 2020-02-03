@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote/src/application_constants.dart';
 
-class SpongeFlutterApp extends StatelessWidget {
-  SpongeFlutterApp({
+class SpongeRemoteApp extends StatelessWidget {
+  SpongeRemoteApp({
     @required this.service,
     @required this.widgetsFactory,
   });

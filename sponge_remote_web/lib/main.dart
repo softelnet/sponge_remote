@@ -30,7 +30,7 @@ void main() async {
     var service = WebApplicationService();
     await service.init();
 
-    runApp(SpongeFlutterApp(
+    runApp(SpongeRemoteApp(
       service: service,
       widgetsFactory: SpongeWidgetsFactory(
         onCreateDrawer: (_) => AppDrawer(),

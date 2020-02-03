@@ -21,7 +21,7 @@ import 'package:sponge_remote_mobile/network_utils.dart';
 
 void main() async {
   configLogger();
-  runApp(SpongeFlutterApp(
+  runApp(SpongeRemoteApp(
     service: MobileApplicationService(),
     widgetsFactory: SpongeWidgetsFactory(
       onCreateDrawer: (_) => AppDrawer(),
