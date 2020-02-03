@@ -27,11 +27,10 @@ void main() {
   configLogger();
 
   var connection = SpongeConnection(
-      name: 'connection',
-      url: //ApplicationConstants
-          //.DEMO_SERVICE_ADDRESS, //
-          'http://localhost:8888/sponge.json/v1',
-      anonymous: true);
+    name: 'connection',
+    url: 'http://localhost:8888',
+    anonymous: true,
+  );
 
   var actionName = 'DigitsPredict';
 

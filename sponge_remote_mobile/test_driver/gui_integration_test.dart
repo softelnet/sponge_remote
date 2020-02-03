@@ -185,7 +185,7 @@ void main() {
         //await driver.waitFor(find.text(TEST_SERVICE));
 
         await driver.tap(find.byValueKey('address'));
-        await driver.enterText('http://$testHost:8888/sponge.json/v1');
+        await driver.enterText('http://$testHost:8888');
 
         await driver.tap(find.byValueKey('anonymous'));
         await driver.tap(find.byValueKey('username'));

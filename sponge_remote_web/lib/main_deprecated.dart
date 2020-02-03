@@ -4,8 +4,8 @@ import 'package:sponge_grpc_client_dart/sponge_grpc_client_dart_web.dart';
 
 Future<SpongeGrpcClient> setup() async {
   // Create a new Sponge REST API client.
-  var restClient = SpongeRestClient(
-      SpongeRestClientConfiguration('http://localhost:8888/sponge.json/v1'));
+  var restClient =
+      SpongeRestClient(SpongeRestClientConfiguration('http://localhost:8888'));
 
   var grpcClient = WebSpongeGrpcClient(restClient,
       configuration: SpongeGrpcClientConfiguration(port: 8890));
