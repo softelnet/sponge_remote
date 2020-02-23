@@ -59,7 +59,7 @@ class SpongeRemoteApp extends StatelessWidget {
             ),
           );
         } else if (snapshot.hasError) {
-          return _buildApp(
+          return _buildUninitializedApp(
             child: Center(
               child: NotificationPanelWidget(
                 message: snapshot.error,
@@ -69,14 +69,14 @@ class SpongeRemoteApp extends StatelessWidget {
           );
         }
 
-        return _buildApp(
+        return _buildUninitializedApp(
           child: Container(color: Colors.teal),
         );
       },
     );
   }
 
-  Widget _buildApp({@required Widget child}) {
+  Widget _buildUninitializedApp({@required Widget child}) {
     return MaterialApp(
       title: APPLICATION_NAME,
       home: child,
