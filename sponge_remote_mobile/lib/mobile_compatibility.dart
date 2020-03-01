@@ -21,11 +21,13 @@ import 'package:open_file/open_file.dart';
 
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
+import 'package:sponge_remote_mobile/src/geo_widgets.dart';
 
 class MobileDefaultTypeGuiProvider extends DefaultTypeGuiProvider {
   MobileDefaultTypeGuiProvider() {
     registerAll({
       DataTypeKind.BINARY: (type) => MobileBinaryTypeGuiProvider(type),
+      DataTypeKind.LIST: (type) => MobileListTypeGuiProvider(type),
     });
   }
 }
@@ -93,5 +95,46 @@ class MobileBinaryTypeGuiProvider extends BinaryTypeGuiProvider {
         await _saveFile(viewerContext, mimeType, await getTemporaryDirectory());
 
     await OpenFile.open(file.path);
+  }
+}
+
+class MobileListTypeGuiProvider extends ListTypeGuiProvider {
+  MobileListTypeGuiProvider(DataType type) : super(type);
+
+  @override
+  Widget doCreateEditor(TypeEditorContext editorContext) {
+    var geoMap = GeoMap.fromJson(editorContext.features[Features.GEO_MAP]);
+
+    if (geoMap != null) {
+      var label = editorContext.getDecorationLabel();
+
+      return FlatButton(
+        key: Key('open-map'),
+        color: Theme.of(editorContext.context).primaryColor,
+        textColor: Colors.white,
+        child: Text(label?.toUpperCase() ?? 'MAP'),
+        // child: Icon(
+        //   getActionIconDataByActionName(
+        //           service, _subActionsController.getCreateActionName()) ??
+        //       Icons.add,
+        //   color: getIconColor(context),
+        // ),
+        onPressed: () async {
+          await Navigator.push(
+            editorContext.context,
+            createPageRoute(
+              editorContext.context,
+              builder: (context) => GeoMapPage(
+                title: label ?? 'Map',
+                geoMap: geoMap,
+                uiContext: editorContext,
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      return super.doCreateEditor(editorContext);
+    }
   }
 }
