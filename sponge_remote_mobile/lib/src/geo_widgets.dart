@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 
@@ -37,7 +38,7 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
   Widget build(BuildContext context) {
     var service = ApplicationProvider.of(context).service;
 
-    List<TileLayerOptions> layersOptions = widget.geoMap.layers
+    List<TileLayerOptions> baseLayers = widget.geoMap.layers
             ?.where((layer) => layer.urlTemplate != null)
             ?.map((layer) => TileLayerOptions(
                   urlTemplate: layer.urlTemplate,
@@ -57,59 +58,74 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
                 return null;
               }
 
-              var icon = getIconData(service, element.features[Features.ICON]);
+              var iconData =
+                  getIconData(service, element.features[Features.ICON]) ??
+                      MdiIcons.marker;
               var iconColor =
                   string2color(element.features[Features.ICON_COLOR]);
+              var iconWidth =
+                  (element.features[Features.ICON_WIDTH] as num)?.toDouble();
+              var icon = Icon(iconData, color: iconColor, size: iconWidth);
+              var label = element.valueLabel;
 
               return Marker(
-                width: (element.features[Features.ICON_WIDTH] as num)
-                        ?.toDouble() ??
-                    30.0,
+                width: iconWidth ?? 30.0,
                 height: (element.features[Features.ICON_HEIGHT] as num)
                         .toDouble() ??
                     30.0,
                 point: LatLng(geoPosition.latitude, geoPosition.longitude),
-                builder: (ctx) => Container(
-                  child: icon != null
-                      ? Icon(
-                          icon,
-                          color: iconColor,
-                        )
-                      : FlutterLogo(),
-                ),
+                builder: (ctx) => label != null
+                    ? Tooltip(
+                        message: label,
+                        child: Container(child: icon),
+                      )
+                    : icon,
               );
             })
             ?.where((marker) => marker != null)
             ?.toList() ??
         [];
 
-    return FlutterMap(
-      options: MapOptions(
-        center: widget.geoMap?.center != null
-            ? LatLng(
-                widget.geoMap.center.latitude, widget.geoMap.center.longitude)
-            : null,
-        zoom: widget.geoMap?.zoom ?? 13,
-        minZoom: widget.geoMap?.minZoom,
-        maxZoom: widget.geoMap?.maxZoom,
-        // The CRS is currently ignored.
-        debug: true,
-      ),
-      layers: [
-        ...layersOptions,
-        MarkerLayerOptions(
-          markers: [
-            ...markers,
-            // Marker(
-            //   width: 80.0,
-            //   height: 80.0,
-            //   point: LatLng(50.06143, 19.93658),
-            //   builder: (ctx) => Container(
-            //     child: FlutterLogo(),
-            //   ),
-            // ),
+    var attribution = widget.geoMap.features[Features.GEO_ATTRIBUTION];
+
+    return Stack(
+      children: [
+        FlutterMap(
+          options: MapOptions(
+            center: widget.geoMap?.center != null
+                ? LatLng(widget.geoMap.center.latitude,
+                    widget.geoMap.center.longitude)
+                : null,
+            zoom: widget.geoMap?.zoom ?? 13,
+            minZoom: widget.geoMap?.minZoom,
+            maxZoom: widget.geoMap?.maxZoom,
+            // The CRS is currently ignored.
+            debug: true,
+          ),
+          layers: [
+            ...baseLayers,
+            MarkerLayerOptions(
+              markers: markers,
+            ),
           ],
         ),
+        if (attribution != null)
+          Container(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.all(5),
+              child: Opacity(
+                opacity: 0.75,
+                child: Text(
+                  attribution.toString(),
+                  style: TextStyle(
+                    color: Colors.black,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
