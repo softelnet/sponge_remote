@@ -121,6 +121,7 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
                   style: TextStyle(
                     color: Colors.black,
                     backgroundColor: Colors.white,
+                    fontSize: Theme.of(context).textTheme.caption.fontSize,
                   ),
                 ),
               ),
