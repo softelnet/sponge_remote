@@ -152,7 +152,10 @@ class _GeoMapPageState extends State<GeoMapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Tooltip(
+          message: widget.title,
+          child: Text(widget.title),
+        ),
       ),
       body: GeoMapWidget(
         geoMap: widget.geoMap,
