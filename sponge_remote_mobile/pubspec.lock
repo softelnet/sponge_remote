@@ -181,6 +181,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.6"
+  flutter_compass:
+    dependency: transitive
+    description:
+      name: flutter_compass
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.6"
   flutter_driver:
     dependency: "direct dev"
     description: flutter
@@ -348,6 +355,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.1"
+  location:
+    dependency: transitive
+    description:
+      name: location
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.5.3"
   logging:
     dependency: "direct main"
     description:
@@ -822,6 +836,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.0+2"
+  user_location:
+    dependency: "direct main"
+    description:
+      name: user_location
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.2"
   uuid:
     dependency: transitive
     description:

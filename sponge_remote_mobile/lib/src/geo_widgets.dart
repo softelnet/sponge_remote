@@ -18,6 +18,7 @@ import 'package:latlong/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
+import 'package:user_location/user_location.dart';
 
 class GeoMapWidget extends StatefulWidget {
   GeoMapWidget({
@@ -34,6 +35,8 @@ class GeoMapWidget extends StatefulWidget {
 }
 
 class _GeoMapWidgetState extends State<GeoMapWidget> {
+  final _mapController = MapController();
+
   @override
   Widget build(BuildContext context) {
     var service = ApplicationProvider.of(context).service;
@@ -100,20 +103,33 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
             minZoom: widget.geoMap?.minZoom,
             maxZoom: widget.geoMap?.maxZoom,
             // The CRS is currently ignored.
-            debug: true,
+            //debug: true,
+            plugins: [
+              UserLocationPlugin(),
+            ],
           ),
           layers: [
             ...baseLayers,
             MarkerLayerOptions(
               markers: markers,
             ),
+            UserLocationOptions(
+              context: context,
+              mapController: _mapController,
+              markers: markers,
+              zoomToCurrentLocationOnLoad: false,
+              updateMapLocationOnPositionChange: false,
+              moveToCurrentLocationFloatingActionButton:
+                  _buildMoveToCurrentLocationFloatingActionButton(),
+            ),
           ],
+          mapController: _mapController,
         ),
         if (attribution != null)
           Container(
-            alignment: Alignment.bottomRight,
+            alignment: Alignment.bottomLeft,
             child: Padding(
-              padding: const EdgeInsets.all(5),
+              padding: const EdgeInsets.only(left: 5, bottom: 2),
               child: Opacity(
                 opacity: 0.75,
                 child: Text(
@@ -130,6 +146,21 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
       ],
     );
   }
+
+  Widget _buildMoveToCurrentLocationFloatingActionButton() => Opacity(
+        opacity: 0.85,
+        child: Container(
+          decoration: BoxDecoration(
+              color:
+                  getFloatingButtonBackgroudColor(context), //Colors.blueAccent,
+              borderRadius: BorderRadius.circular(20.0),
+              boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 10.0)]),
+          child: Icon(
+            Icons.my_location,
+            color: Colors.white,
+          ),
+        ),
+      );
 }
 
 class GeoMapPage extends StatefulWidget {
@@ -158,9 +189,11 @@ class _GeoMapPageState extends State<GeoMapPage> {
           child: Text(widget.title),
         ),
       ),
-      body: GeoMapWidget(
-        geoMap: widget.geoMap,
-        uiContext: widget.uiContext,
+      body: SafeArea(
+        child: GeoMapWidget(
+          geoMap: widget.geoMap,
+          uiContext: widget.uiContext,
+        ),
       ),
     );
   }
