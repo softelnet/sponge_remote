@@ -53,6 +53,7 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
             ?.map((layer) => TileLayerOptions(
                   urlTemplate: layer.urlTemplate,
                   additionalOptions: layer.options,
+                  subdomains: layer.subdomains ?? [],
                 ))
             ?.toList() ??
         [];
@@ -187,8 +188,7 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
         onPressed: null,
         child: Icon(Icons.my_location),
         backgroundColor: getFloatingButtonBackgroudColor(context),
-      )
-      );
+      ));
 }
 
 class GeoMapConfiguration {

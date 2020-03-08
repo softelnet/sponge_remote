@@ -108,17 +108,15 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
     if (geoMap != null) {
       var label = editorContext.getDecorationLabel();
 
-      return FlatButton(
+      return FlatButton.icon(
         key: Key('open-map'),
         color: Theme.of(editorContext.context).primaryColor,
         textColor: Colors.white,
-        child: Text(label?.toUpperCase() ?? 'MAP'),
-        // child: Icon(
-        //   getActionIconDataByActionName(
-        //           service, _subActionsController.getCreateActionName()) ??
-        //       Icons.add,
-        //   color: getIconColor(context),
-        // ),
+        label: Text(label?.toUpperCase() ?? 'MAP'),
+        icon: Icon(
+          Icons.map,
+          color: getIconColor(editorContext.context),
+        ),
         onPressed: () async {
           await Navigator.push(
             editorContext.context,
