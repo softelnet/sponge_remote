@@ -55,12 +55,12 @@ Future<void> findAndAddServices(
             network: discoveredService.network,
           )
         ]);
-
-        connectionsPresenter.refresh();
       }
     }
   } finally {
-    connectionsPresenter.refresh(() => connectionsPresenter.busy = false);
+    if (connectionsPresenter.isBound) {
+      connectionsPresenter.refresh(() => connectionsPresenter.busy = false);
+    }
   }
 }
 

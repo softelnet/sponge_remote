@@ -14,6 +14,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:sponge_client_dart/sponge_client_dart.dart';
@@ -24,11 +25,17 @@ class GeoMapWidget extends StatefulWidget {
   GeoMapWidget({
     Key key,
     @required this.geoMap,
+    @required this.configuration,
     @required this.uiContext,
-  }) : super(key: key);
+    bool clusterMarkers = true,
+  })  : assert(clusterMarkers != null),
+        clusterMarkers = clusterMarkers,
+        super(key: key);
 
   final GeoMap geoMap;
+  final GeoMapConfiguration configuration;
   final UiContext uiContext;
+  final bool clusterMarkers;
 
   @override
   _GeoMapWidgetState createState() => _GeoMapWidgetState();
@@ -106,13 +113,35 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
             //debug: true,
             plugins: [
               UserLocationPlugin(),
+              if (widget.clusterMarkers) MarkerClusterPlugin(),
             ],
           ),
           layers: [
             ...baseLayers,
-            MarkerLayerOptions(
-              markers: markers,
-            ),
+            if (!widget.clusterMarkers)
+              MarkerLayerOptions(
+                markers: markers,
+              ),
+            if (widget.clusterMarkers)
+              MarkerClusterLayerOptions(
+                maxClusterRadius: 60,
+                size: Size(40, 40),
+                fitBoundsOptions: FitBoundsOptions(
+                  padding: EdgeInsets.all(50),
+                ),
+                markers: markers,
+                polygonOptions: PolygonOptions(
+                  borderColor: Colors.blueAccent,
+                  color: Colors.black12,
+                  borderStrokeWidth: 2,
+                ),
+                builder: (context, markers) {
+                  return CircleAvatar(
+                    backgroundColor: getPrimaryColor(context),
+                    child: Text(markers.length.toString()),
+                  );
+                },
+              ),
             UserLocationOptions(
               context: context,
               mapController: _mapController,
@@ -121,6 +150,10 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
               updateMapLocationOnPositionChange: false,
               moveToCurrentLocationFloatingActionButton:
                   _buildMoveToCurrentLocationFloatingActionButton(),
+              fabBottom: widget.configuration.fabMargin,
+              fabRight: widget.configuration.fabMargin,
+              fabWidth: widget.configuration.fabSize,
+              fabHeight: widget.configuration.fabSize,
             ),
           ],
           mapController: _mapController,
@@ -148,19 +181,26 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
   }
 
   Widget _buildMoveToCurrentLocationFloatingActionButton() => Opacity(
-        opacity: 0.85,
-        child: Container(
-          decoration: BoxDecoration(
-              color:
-                  getFloatingButtonBackgroudColor(context), //Colors.blueAccent,
-              borderRadius: BorderRadius.circular(20.0),
-              boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 10.0)]),
-          child: Icon(
-            Icons.my_location,
-            color: Colors.white,
-          ),
-        ),
+      opacity: widget.configuration.fabOpacity,
+      child: FloatingActionButton(
+        heroTag: 'fabMoveToCurrentLocation',
+        onPressed: null,
+        child: Icon(Icons.my_location),
+        backgroundColor: getFloatingButtonBackgroudColor(context),
+      )
       );
+}
+
+class GeoMapConfiguration {
+  GeoMapConfiguration({
+    this.fabOpacity = 0.85,
+    this.fabSize = 50,
+    this.fabMargin = 10,
+  });
+
+  final double fabOpacity;
+  final double fabSize;
+  final double fabMargin;
 }
 
 class GeoMapPage extends StatefulWidget {
@@ -180,21 +220,88 @@ class GeoMapPage extends StatefulWidget {
 }
 
 class _GeoMapPageState extends State<GeoMapPage> {
+  final _configuration = GeoMapConfiguration();
+  bool _fullScreen = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Tooltip(
-          message: widget.title,
-          child: Text(widget.title),
-        ),
-      ),
+      appBar: _fullScreen
+          ? null
+          : AppBar(
+              title: Tooltip(
+                message: widget.title,
+                child: Text(widget.title),
+              ),
+              actions: <Widget>[
+                _buildMenu(context),
+              ],
+            ),
       body: SafeArea(
-        child: GeoMapWidget(
-          geoMap: widget.geoMap,
-          uiContext: widget.uiContext,
+        child: Stack(
+          children: [
+            GeoMapWidget(
+              geoMap: widget.geoMap,
+              configuration: _configuration,
+              uiContext: widget.uiContext,
+            ),
+            if (_fullScreen)
+              Container(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: _configuration.fabMargin,
+                    top: _configuration.fabMargin,
+                  ),
+                  child: _buildMenu(
+                    context,
+                    icon: _buildMenuIcon(context),
+                    //),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _buildMenuIcon(BuildContext context) => Opacity(
+        opacity: _configuration.fabOpacity,
+        child: SizedBox(
+          child: FloatingActionButton(
+            heroTag: 'fabMenu',
+            onPressed: null,
+            child: Icon(getPopupMenuIconData(context)),
+            backgroundColor: getFloatingButtonBackgroudColor(context),
+          ),
+          width: _configuration.fabSize,
+          height: _configuration.fabSize,
+        ),
+      );
+
+  Widget _buildMenu(BuildContext context, {Widget icon}) =>
+      PopupMenuButton<String>(
+        key: Key('map-menu'),
+        onSelected: (value) {
+          if (value == 'fullScreen') {
+            setState(() {
+              _fullScreen = !_fullScreen;
+            });
+          }
+        },
+        itemBuilder: (BuildContext context) => [
+          PopupMenuItem<String>(
+            key: Key('map-menu-fullScreen'),
+            value: 'fullScreen',
+            child: IconTextPopupMenuItemWidget(
+              icon: _fullScreen ? Icons.exit_to_app : Icons.fullscreen,
+              text: _fullScreen ? 'Exit full screen' : 'Enter full screen',
+            ),
+            //checked: _fullScreen,
+          ),
+        ],
+        padding: EdgeInsets.zero,
+        icon: icon,
+      );
 }
