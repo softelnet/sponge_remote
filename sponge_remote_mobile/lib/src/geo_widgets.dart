@@ -41,7 +41,7 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
 
   UiContext get uiContext => widget.geoMapController.uiContext;
 
-  bool get clusterMarkers => widget.geoMapController.clusterMarkers;
+  bool get clusterMarkers => widget.geoMapController.enableClusterMarkers;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +50,9 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     _subActionsController =
         SubActionsController.forList(uiContext, service.spongeService);
 
-    var markers = _createMarkers();
+    var visibleData = widget.geoMapController.visibleData;
+
+    List<Marker> markers = visibleData ? _createMarkers() : [];
     var attribution = geoMap.features[Features.GEO_ATTRIBUTION];
 
     return Stack(
@@ -59,9 +61,12 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
           options: _createMapOptions(),
           layers: [
             ..._createBaseLayers(),
-            if (!clusterMarkers) MarkerLayerOptions(markers: markers),
-            if (clusterMarkers) _createMarkerClusterLayerOptions(markers),
-            _createUserLocationOptions(markers),
+            if (!clusterMarkers && visibleData)
+              MarkerLayerOptions(markers: markers),
+            if (clusterMarkers && visibleData)
+              _createMarkerClusterLayerOptions(markers),
+            if (widget.geoMapController.enableCurrentLocation)
+              _createUserLocationOptions(markers),
           ],
           mapController: widget.geoMapController.mapController,
         ),
@@ -96,8 +101,8 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
       // The CRS is currently ignored.
       //debug: true,
       plugins: [
-        UserLocationPlugin(),
         if (clusterMarkers) MarkerClusterPlugin(),
+        if (widget.geoMapController.enableCurrentLocation) UserLocationPlugin(),
       ],
     );
   }
@@ -198,7 +203,8 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
       mapController: widget.geoMapController.mapController,
       markers: markers,
       zoomToCurrentLocationOnLoad: false,
-      updateMapLocationOnPositionChange: false,
+      updateMapLocationOnPositionChange:
+          widget.geoMapController.followCurrentLocation,
       moveToCurrentLocationFloatingActionButton:
           _buildMoveToCurrentLocationFloatingActionButton(),
       fabBottom: widget.geoMapController.fabMargin,
@@ -228,21 +234,36 @@ class GeoMapController {
     this.fabMargin = 10,
     List<bool> visibleLayers,
     this.visibleData = true,
-    bool clusterMarkers = true,
-  })  : assert(clusterMarkers != null),
+    bool enableClusterMarkers = true,
+    bool enableCurrentLocation = true,
+    bool followCurrentLocation = false,
+    bool fullScreen = false,
+  })  : assert(enableClusterMarkers != null),
+        assert(enableCurrentLocation != null),
+        assert(followCurrentLocation != null),
+        assert(fullScreen != null),
         visibleLayers = visibleLayers ?? [],
-        clusterMarkers = clusterMarkers;
+        enableClusterMarkers = enableClusterMarkers,
+        enableCurrentLocation = enableCurrentLocation,
+        followCurrentLocation = followCurrentLocation,
+        fullScreen = fullScreen;
 
   final GeoMap geoMap;
   final UiContext uiContext;
 
   LatLng center;
+
   double fabOpacity;
   double fabSize;
   double fabMargin;
+
   List<bool> visibleLayers;
+
   bool visibleData;
-  bool clusterMarkers;
+  bool enableClusterMarkers;
+  bool enableCurrentLocation;
+  bool followCurrentLocation;
+  bool fullScreen;
 
   final mapController = MapController();
 
@@ -296,7 +317,6 @@ class GeoMapPage extends StatefulWidget {
 
 class _GeoMapPageState extends State<GeoMapPage> {
   GeoMapController _geoMapController;
-  bool _fullScreen = false;
 
   @override
   void initState() {
@@ -318,7 +338,7 @@ class _GeoMapPageState extends State<GeoMapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _fullScreen
+      appBar: _geoMapController.fullScreen
           ? null
           : AppBar(
               title: Tooltip(
@@ -335,7 +355,7 @@ class _GeoMapPageState extends State<GeoMapPage> {
             GeoMapWidget(
               geoMapController: _geoMapController,
             ),
-            if (_fullScreen)
+            if (_geoMapController.fullScreen)
               Container(
                 alignment: Alignment.topRight,
                 child: Padding(
@@ -384,39 +404,82 @@ class _GeoMapPageState extends State<GeoMapPage> {
     return PopupMenuButton<Object>(
       key: Key('map-menu'),
       onSelected: (value) {
-        if (value == 'fullScreen') {
-          setState(() {
-            _fullScreen = !_fullScreen;
-          });
-        } else if (value == 'goToData') {
-          setState(() {
+        setState(() {
+          if (value == 'visibleData') {
+            _geoMapController.visibleData = !_geoMapController.visibleData;
+          } else if (value == 'enableClusterMarkers') {
+            _geoMapController.enableClusterMarkers =
+                !_geoMapController.enableClusterMarkers;
+          } else if (value == 'moveToData') {
             _geoMapController.moveToData();
-          });
-        } else if (value is int) {
-          setState(() {
+          } else if (value == 'enableCurrentLocation') {
+            _geoMapController.enableCurrentLocation =
+                !_geoMapController.enableCurrentLocation;
+          } else if (value == 'followCurrentLocation') {
+            _geoMapController.followCurrentLocation =
+                !_geoMapController.followCurrentLocation;
+          } else if (value == 'fullScreen') {
+            _geoMapController.fullScreen = !_geoMapController.fullScreen;
+          } else if (value is int) {
             _geoMapController.visibleLayers[value] =
                 !_geoMapController.visibleLayers[value];
-          });
-        }
+          }
+        });
       },
       itemBuilder: (BuildContext context) => [
+        PopupMenuItem<String>(
+          key: Key('map-menu-visibleData'),
+          value: 'visibleData',
+          child: IconTextPopupMenuItemWidget(
+            icon: MdiIcons.database,
+            text: 'Show data',
+            isOn: _geoMapController.visibleData,
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-enableClusterMarkers'),
+          value: 'enableClusterMarkers',
+          child: IconTextPopupMenuItemWidget(
+            icon: MdiIcons.mapMarker,
+            text: 'Cluster data markers',
+            isOn: _geoMapController.enableClusterMarkers,
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-moveToData'),
+          value: 'moveToData',
+          child: IconTextPopupMenuItemWidget(
+            icon: Icons.list,
+            text: 'Move to data',
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-enableCurrentLocation'),
+          value: 'enableCurrentLocation',
+          child: IconTextPopupMenuItemWidget(
+            icon: MdiIcons.crosshairsGps,
+            text: 'Show current location',
+            isOn: _geoMapController.enableCurrentLocation,
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-followCurrentLocation'),
+          value: 'followCurrentLocation',
+          child: IconTextPopupMenuItemWidget(
+            icon: MdiIcons.locationEnter,
+            text: 'Follow current location',
+            isOn: _geoMapController.followCurrentLocation,
+          ),
+          enabled: _geoMapController.enableCurrentLocation,
+        ),
         PopupMenuItem<String>(
           key: Key('map-menu-fullScreen'),
           value: 'fullScreen',
           child: IconTextPopupMenuItemWidget(
-            icon: _fullScreen ? Icons.exit_to_app : Icons.fullscreen,
-            text: _fullScreen ? 'Exit full screen' : 'Enter full screen',
+            icon: Icons.fullscreen,
+            text: 'Full screen',
+            isOn: _geoMapController.fullScreen,
           ),
-          //checked: _fullScreen,
-        ),
-        PopupMenuItem<String>(
-          key: Key('map-menu-goToData'),
-          value: 'goToData',
-          child: IconTextPopupMenuItemWidget(
-            icon: Icons.list,
-            text: 'Go to data',
-          ),
-          //checked: _fullScreen,
         ),
         if (layerItems.isNotEmpty) PopupMenuDivider(),
         ...layerItems,
