@@ -19,7 +19,7 @@ import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote_mobile/mobile_compatibility.dart';
 
 class MobileApplicationService
-    extends FlutterApplicationService<MobileSpongeService> {
+    extends FlutterApplicationService<MobileSpongeService, FlutterApplicationSettings> {
   MobileApplicationService() {
     typeGuiProvider = MobileDefaultTypeGuiProvider();
   }

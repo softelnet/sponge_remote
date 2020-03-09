@@ -17,7 +17,7 @@ import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_grpc_client_dart/sponge_grpc_client_dart_web.dart';
 
 class WebApplicationService
-    extends FlutterApplicationService<WebSpongeService> {
+    extends FlutterApplicationService<WebSpongeService, FlutterApplicationSettings> {
   @override
   Future<WebSpongeService> createSpongeService(
           SpongeConnection connection, TypeConverter typeConverter) async =>

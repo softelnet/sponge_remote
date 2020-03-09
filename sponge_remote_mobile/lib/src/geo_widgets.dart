@@ -21,6 +21,95 @@ import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:user_location/user_location.dart';
 
+class GeoMapController {
+  GeoMapController({
+    @required GeoMap geoMap,
+    @required this.uiContext,
+    this.fabOpacity = 0.85,
+    this.fabSize = 50,
+    this.fabMargin = 10,
+    this.visibleData = true,
+    bool enableClusterMarkers = true,
+    bool enableCurrentLocation = true,
+    bool followCurrentLocation = false,
+    bool fullScreen = false,
+  })  : assert(geoMap != null),
+        assert(uiContext != null),
+        assert(enableClusterMarkers != null),
+        assert(enableCurrentLocation != null),
+        assert(followCurrentLocation != null),
+        assert(fullScreen != null),
+        _geoMap = geoMap,
+        enableClusterMarkers = enableClusterMarkers,
+        enableCurrentLocation = enableCurrentLocation,
+        followCurrentLocation = followCurrentLocation,
+        fullScreen = fullScreen {
+    center = geoMap.center?.latitude != null && geoMap.center?.longitude != null
+        ? LatLng(geoMap.center.latitude, geoMap.center.longitude)
+        : null;
+    zoom = geoMap.zoom ?? 13;
+
+    visibleLayers = List.filled(geoMap.layers.length, true, growable: true);
+  }
+
+  final GeoMap _geoMap;
+  final UiContext uiContext;
+
+  LatLng center;
+  double zoom;
+
+  List<bool> visibleLayers;
+  bool visibleData;
+
+  // TODO Preferences.
+  bool enableClusterMarkers;
+  bool enableCurrentLocation;
+  bool followCurrentLocation;
+  bool fullScreen;
+
+  double fabOpacity;
+  double fabSize;
+  double fabMargin;
+
+  double get minZoom => _geoMap.minZoom;
+  double get maxZoom => _geoMap.maxZoom;
+  List<GeoLayer> get layers => _geoMap.layers ?? [];
+  String get attribution => _geoMap.features[Features.GEO_ATTRIBUTION];
+
+  final mapController = MapController();
+
+  List get data => (uiContext.value as List) ?? [];
+
+  GeoPosition getElementGeoPositionByIndex(int index) =>
+      getElementGeoPosition(data[index]);
+
+  GeoPosition getElementGeoPosition(dynamic element) {
+    if (!(element is AnnotatedValue)) {
+      return null;
+    }
+
+    // TODO Convert JSON Map to GeoPosition in a lower layer.
+    var geoPosition =
+        GeoPosition.fromJson(element.features[Features.GEO_POSITION]);
+    if (geoPosition?.latitude == null || geoPosition?.longitude == null) {
+      return null;
+    }
+
+    return geoPosition;
+  }
+
+  void moveToData() {
+    var geoPosition = data
+        .map(getElementGeoPosition)
+        .firstWhere((geoPosition) => geoPosition != null, orElse: () => null);
+    if (geoPosition?.latitude != null && geoPosition?.longitude != null) {
+      center = LatLng(geoPosition.latitude, geoPosition.longitude);
+
+      mapController.move(center, mapController.zoom);
+    }
+  }
+}
+
 class GeoMapWidget extends StatefulWidget {
   GeoMapWidget({
     Key key,
@@ -225,124 +314,22 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
       ));
 }
 
-class GeoMapController {
-  GeoMapController({
-    @required GeoMap geoMap,
-    @required this.uiContext,
-    this.fabOpacity = 0.85,
-    this.fabSize = 50,
-    this.fabMargin = 10,
-    List<bool> visibleLayers,
-    this.visibleData = true,
-    bool enableClusterMarkers = true,
-    bool enableCurrentLocation = true,
-    bool followCurrentLocation = false,
-    bool fullScreen = false,
-  })  : assert(geoMap != null),
-        assert(uiContext != null),
-        assert(enableClusterMarkers != null),
-        assert(enableCurrentLocation != null),
-        assert(followCurrentLocation != null),
-        assert(fullScreen != null),
-        _geoMap = geoMap,
-        visibleLayers = visibleLayers ?? [],
-        enableClusterMarkers = enableClusterMarkers,
-        enableCurrentLocation = enableCurrentLocation,
-        followCurrentLocation = followCurrentLocation,
-        fullScreen = fullScreen {
-    center = geoMap.center?.latitude != null && geoMap.center?.longitude != null
-        ? LatLng(geoMap.center.latitude, geoMap.center.longitude)
-        : null;
-    zoom = geoMap.zoom ?? 13;
-  }
-
-  final GeoMap _geoMap;
-  final UiContext uiContext;
-
-  LatLng center;
-  double zoom;
-
-  List<bool> visibleLayers;
-
-  bool visibleData;
-  bool enableClusterMarkers;
-  bool enableCurrentLocation;
-  bool followCurrentLocation;
-  bool fullScreen;
-
-  double fabOpacity;
-  double fabSize;
-  double fabMargin;
-
-  double get minZoom => _geoMap.minZoom;
-  double get maxZoom => _geoMap.maxZoom;
-  List<GeoLayer> get layers => _geoMap.layers ?? [];
-  String get attribution => _geoMap.features[Features.GEO_ATTRIBUTION];
-
-  final mapController = MapController();
-
-  List get data => (uiContext.value as List) ?? [];
-
-  GeoPosition getElementGeoPositionByIndex(int index) =>
-      getElementGeoPosition(data[index]);
-
-  GeoPosition getElementGeoPosition(dynamic element) {
-    if (!(element is AnnotatedValue)) {
-      return null;
-    }
-
-    // TODO Convert JSON Map to GeoPosition in a lower layer.
-    var geoPosition =
-        GeoPosition.fromJson(element.features[Features.GEO_POSITION]);
-    if (geoPosition?.latitude == null || geoPosition?.longitude == null) {
-      return null;
-    }
-
-    return geoPosition;
-  }
-
-  void moveToData() {
-    var geoPosition = data
-        .map(getElementGeoPosition)
-        .firstWhere((geoPosition) => geoPosition != null, orElse: () => null);
-    if (geoPosition?.latitude != null && geoPosition?.longitude != null) {
-      center = LatLng(geoPosition.latitude, geoPosition.longitude);
-
-      mapController.move(center, mapController.zoom);
-    }
-  }
-}
-
 class GeoMapPage extends StatefulWidget {
   GeoMapPage({
     Key key,
     @required this.title,
-    @required this.geoMap,
-    @required this.uiContext,
+    @required this.geoMapController,
   }) : super(key: key);
 
   final String title;
-  final GeoMap geoMap;
-  final UiContext uiContext;
+  final GeoMapController geoMapController;
 
   @override
   _GeoMapPageState createState() => _GeoMapPageState();
 }
 
 class _GeoMapPageState extends State<GeoMapPage> {
-  GeoMapController _geoMapController;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _geoMapController = GeoMapController(
-      geoMap: widget.geoMap,
-      uiContext: widget.uiContext,
-      visibleLayers:
-          List.filled(widget.geoMap.layers.length, true, growable: true),
-    );
-  }
+  GeoMapController get _geoMapController => widget.geoMapController;
 
   @override
   Widget build(BuildContext context) {
@@ -401,7 +388,7 @@ class _GeoMapPageState extends State<GeoMapPage> {
 
   Widget _buildMenu(BuildContext context, {Widget icon}) {
     var layerItems = <CheckedPopupMenuItem<int>>[];
-    widget.geoMap.layers.asMap().forEach((index, layer) => layerItems.add(
+    _geoMapController.layers.asMap().forEach((index, layer) => layerItems.add(
           CheckedPopupMenuItem<int>(
             key: Key('map-menu-layer-$index'),
             value: index,

@@ -106,6 +106,8 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
     var geoMap = GeoMap.fromJson(editorContext.features[Features.GEO_MAP]);
 
     if (geoMap != null) {
+      var service = ApplicationProvider.of(editorContext.context).service;
+
       var label = editorContext.getDecorationLabel();
 
       return FlatButton.icon(
@@ -118,17 +120,32 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
           color: getIconColor(editorContext.context),
         ),
         onPressed: () async {
+          var geoMapController = GeoMapController(
+            geoMap: geoMap,
+            uiContext: editorContext,
+            enableClusterMarkers: service.settings.mapEnableClusterMarkers,
+            enableCurrentLocation: service.settings.mapEnableCurrentLocation,
+            followCurrentLocation: service.settings.mapFollowCurrentLocation,
+            fullScreen: service.settings.mapFullScreen,
+          );
           await Navigator.push(
             editorContext.context,
             createPageRoute(
               editorContext.context,
               builder: (context) => GeoMapPage(
                 title: label ?? 'Map',
-                geoMap: geoMap,
-                uiContext: editorContext,
+                geoMapController: geoMapController,
               ),
             ),
           );
+
+          await service.settings.setMapEnableClusterMarkers(
+              geoMapController.enableClusterMarkers);
+          await service.settings.setMapEnableCurrentLocation(
+              geoMapController.enableCurrentLocation);
+          await service.settings.setMapFollowCurrentLocation(
+              geoMapController.followCurrentLocation);
+          await service.settings.setMapFullScreen(geoMapController.fullScreen);
         },
       );
     } else {
