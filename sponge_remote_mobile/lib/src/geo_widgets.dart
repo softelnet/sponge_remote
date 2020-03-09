@@ -37,8 +37,6 @@ class GeoMapWidget extends StatefulWidget {
 class _GeoMapWidgetState extends State<GeoMapWidget> {
   SubActionsController _subActionsController;
 
-  GeoMap get geoMap => widget.geoMapController.geoMap;
-
   UiContext get uiContext => widget.geoMapController.uiContext;
 
   bool get clusterMarkers => widget.geoMapController.enableClusterMarkers;
@@ -53,7 +51,7 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     var visibleData = widget.geoMapController.visibleData;
 
     List<Marker> markers = visibleData ? _createMarkers() : [];
-    var attribution = geoMap.features[Features.GEO_ATTRIBUTION];
+    var attribution = widget.geoMapController.attribution;
 
     return Stack(
       children: [
@@ -75,10 +73,28 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     );
   }
 
+  MapOptions _createMapOptions() {
+    return MapOptions(
+      center: widget.geoMapController.center,
+      zoom: widget.geoMapController.zoom,
+      minZoom: widget.geoMapController.minZoom,
+      maxZoom: widget.geoMapController.maxZoom,
+      // The CRS is currently ignored.
+      onPositionChanged: (MapPosition position, bool hasGesture) {
+        widget.geoMapController.center = position.center;
+        widget.geoMapController.zoom = position.zoom;
+      },
+      plugins: [
+        if (clusterMarkers) MarkerClusterPlugin(),
+        if (widget.geoMapController.enableCurrentLocation) UserLocationPlugin(),
+      ],
+    );
+  }
+
   List<TileLayerOptions> _createBaseLayers() {
     var layerOptions = <TileLayerOptions>[];
 
-    geoMap.layers?.asMap()?.forEach((index, layer) {
+    widget.geoMapController.layers.asMap().forEach((index, layer) {
       if (widget.geoMapController.visibleLayers[index] &&
           layer.urlTemplate != null) {
         layerOptions.add(TileLayerOptions(
@@ -90,21 +106,6 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     });
 
     return layerOptions;
-  }
-
-  MapOptions _createMapOptions() {
-    return MapOptions(
-      center: widget.geoMapController.center,
-      zoom: geoMap.zoom ?? 13,
-      minZoom: geoMap.minZoom,
-      maxZoom: geoMap.maxZoom,
-      // The CRS is currently ignored.
-      //debug: true,
-      plugins: [
-        if (clusterMarkers) MarkerClusterPlugin(),
-        if (widget.geoMapController.enableCurrentLocation) UserLocationPlugin(),
-      ],
-    );
   }
 
   Widget _buildAttributionWidget(Object attribution) {
@@ -226,9 +227,8 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
 
 class GeoMapController {
   GeoMapController({
-    @required this.geoMap,
+    @required GeoMap geoMap,
     @required this.uiContext,
-    this.center,
     this.fabOpacity = 0.85,
     this.fabSize = 50,
     this.fabMargin = 10,
@@ -238,24 +238,29 @@ class GeoMapController {
     bool enableCurrentLocation = true,
     bool followCurrentLocation = false,
     bool fullScreen = false,
-  })  : assert(enableClusterMarkers != null),
+  })  : assert(geoMap != null),
+        assert(uiContext != null),
+        assert(enableClusterMarkers != null),
         assert(enableCurrentLocation != null),
         assert(followCurrentLocation != null),
         assert(fullScreen != null),
+        _geoMap = geoMap,
         visibleLayers = visibleLayers ?? [],
         enableClusterMarkers = enableClusterMarkers,
         enableCurrentLocation = enableCurrentLocation,
         followCurrentLocation = followCurrentLocation,
-        fullScreen = fullScreen;
+        fullScreen = fullScreen {
+    center = geoMap.center?.latitude != null && geoMap.center?.longitude != null
+        ? LatLng(geoMap.center.latitude, geoMap.center.longitude)
+        : null;
+    zoom = geoMap.zoom ?? 13;
+  }
 
-  final GeoMap geoMap;
+  final GeoMap _geoMap;
   final UiContext uiContext;
 
   LatLng center;
-
-  double fabOpacity;
-  double fabSize;
-  double fabMargin;
+  double zoom;
 
   List<bool> visibleLayers;
 
@@ -264,6 +269,15 @@ class GeoMapController {
   bool enableCurrentLocation;
   bool followCurrentLocation;
   bool fullScreen;
+
+  double fabOpacity;
+  double fabSize;
+  double fabMargin;
+
+  double get minZoom => _geoMap.minZoom;
+  double get maxZoom => _geoMap.maxZoom;
+  List<GeoLayer> get layers => _geoMap.layers ?? [];
+  String get attribution => _geoMap.features[Features.GEO_ATTRIBUTION];
 
   final mapController = MapController();
 
@@ -325,11 +339,6 @@ class _GeoMapPageState extends State<GeoMapPage> {
     _geoMapController = GeoMapController(
       geoMap: widget.geoMap,
       uiContext: widget.uiContext,
-      center: widget.geoMap.center?.latitude != null &&
-              widget.geoMap.center?.longitude != null
-          ? LatLng(
-              widget.geoMap.center.latitude, widget.geoMap.center.longitude)
-          : null,
       visibleLayers:
           List.filled(widget.geoMap.layers.length, true, growable: true),
     );
