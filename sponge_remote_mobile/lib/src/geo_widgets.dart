@@ -24,165 +24,192 @@ import 'package:user_location/user_location.dart';
 class GeoMapWidget extends StatefulWidget {
   GeoMapWidget({
     Key key,
-    @required this.geoMap,
-    @required this.configuration,
-    @required this.uiContext,
+    @required this.geoMapController,
     bool clusterMarkers = true,
-  })  : assert(clusterMarkers != null),
-        clusterMarkers = clusterMarkers,
-        super(key: key);
+  }) : super(key: key);
 
-  final GeoMap geoMap;
-  final GeoMapConfiguration configuration;
-  final UiContext uiContext;
-  final bool clusterMarkers;
+  final GeoMapController geoMapController;
 
   @override
   _GeoMapWidgetState createState() => _GeoMapWidgetState();
 }
 
 class _GeoMapWidgetState extends State<GeoMapWidget> {
-  final _mapController = MapController();
+  SubActionsController _subActionsController;
+
+  GeoMap get geoMap => widget.geoMapController.geoMap;
+
+  UiContext get uiContext => widget.geoMapController.uiContext;
+
+  bool get clusterMarkers => widget.geoMapController.clusterMarkers;
 
   @override
   Widget build(BuildContext context) {
     var service = ApplicationProvider.of(context).service;
 
-    List<TileLayerOptions> baseLayers = widget.geoMap.layers
-            ?.where((layer) => layer.urlTemplate != null)
-            ?.map((layer) => TileLayerOptions(
-                  urlTemplate: layer.urlTemplate,
-                  additionalOptions: layer.options,
-                  subdomains: layer.subdomains ?? [],
-                ))
-            ?.toList() ??
-        [];
+    _subActionsController =
+        SubActionsController.forList(uiContext, service.spongeService);
 
-    List<Marker> markers = (widget.uiContext.value as List)
-            ?.whereType<AnnotatedValue>()
-            ?.map((element) {
-              // TODO Convert JSON Map to GeoPosition in a lower layer.
-              var geoPosition =
-                  GeoPosition.fromJson(element.features[Features.GEO_POSITION]);
-              if (geoPosition?.latitude == null ||
-                  geoPosition?.longitude == null) {
-                return null;
-              }
-
-              var iconData =
-                  getIconData(service, element.features[Features.ICON]) ??
-                      MdiIcons.marker;
-              var iconColor =
-                  string2color(element.features[Features.ICON_COLOR]);
-              var iconWidth =
-                  (element.features[Features.ICON_WIDTH] as num)?.toDouble();
-              var icon = Icon(iconData, color: iconColor, size: iconWidth);
-              var label = element.valueLabel;
-
-              return Marker(
-                width: iconWidth ?? 30.0,
-                height: (element.features[Features.ICON_HEIGHT] as num)
-                        .toDouble() ??
-                    30.0,
-                point: LatLng(geoPosition.latitude, geoPosition.longitude),
-                builder: (ctx) => label != null
-                    ? Tooltip(
-                        message: label,
-                        child: Container(child: icon),
-                      )
-                    : icon,
-              );
-            })
-            ?.where((marker) => marker != null)
-            ?.toList() ??
-        [];
-
-    var attribution = widget.geoMap.features[Features.GEO_ATTRIBUTION];
+    var markers = _createMarkers();
+    var attribution = geoMap.features[Features.GEO_ATTRIBUTION];
 
     return Stack(
       children: [
         FlutterMap(
-          options: MapOptions(
-            center: widget.geoMap?.center != null
-                ? LatLng(widget.geoMap.center.latitude,
-                    widget.geoMap.center.longitude)
-                : null,
-            zoom: widget.geoMap?.zoom ?? 13,
-            minZoom: widget.geoMap?.minZoom,
-            maxZoom: widget.geoMap?.maxZoom,
-            // The CRS is currently ignored.
-            //debug: true,
-            plugins: [
-              UserLocationPlugin(),
-              if (widget.clusterMarkers) MarkerClusterPlugin(),
-            ],
-          ),
+          options: _createMapOptions(),
           layers: [
-            ...baseLayers,
-            if (!widget.clusterMarkers)
-              MarkerLayerOptions(
-                markers: markers,
-              ),
-            if (widget.clusterMarkers)
-              MarkerClusterLayerOptions(
-                maxClusterRadius: 60,
-                size: Size(40, 40),
-                fitBoundsOptions: FitBoundsOptions(
-                  padding: EdgeInsets.all(50),
-                ),
-                markers: markers,
-                polygonOptions: PolygonOptions(
-                  borderColor: Colors.blueAccent,
-                  color: Colors.black12,
-                  borderStrokeWidth: 2,
-                ),
-                builder: (context, markers) {
-                  return CircleAvatar(
-                    backgroundColor: getPrimaryColor(context),
-                    child: Text(markers.length.toString()),
-                  );
-                },
-              ),
-            UserLocationOptions(
-              context: context,
-              mapController: _mapController,
-              markers: markers,
-              zoomToCurrentLocationOnLoad: false,
-              updateMapLocationOnPositionChange: false,
-              moveToCurrentLocationFloatingActionButton:
-                  _buildMoveToCurrentLocationFloatingActionButton(),
-              fabBottom: widget.configuration.fabMargin,
-              fabRight: widget.configuration.fabMargin,
-              fabWidth: widget.configuration.fabSize,
-              fabHeight: widget.configuration.fabSize,
-            ),
+            ..._createBaseLayers(),
+            if (!clusterMarkers) MarkerLayerOptions(markers: markers),
+            if (clusterMarkers) _createMarkerClusterLayerOptions(markers),
+            _createUserLocationOptions(markers),
           ],
-          mapController: _mapController,
+          mapController: widget.geoMapController.mapController,
         ),
-        if (attribution != null)
-          Container(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 5, bottom: 2),
-              child: Opacity(
-                opacity: 0.75,
-                child: Text(
-                  attribution.toString(),
-                  style: TextStyle(
-                    color: Colors.black,
-                    backgroundColor: Colors.white,
-                    fontSize: Theme.of(context).textTheme.caption.fontSize,
-                  ),
-                ),
-              ),
-            ),
-          ),
+        if (attribution != null) _buildAttributionWidget(attribution),
       ],
     );
   }
 
+  List<TileLayerOptions> _createBaseLayers() {
+    var layerOptions = <TileLayerOptions>[];
+
+    geoMap.layers?.asMap()?.forEach((index, layer) {
+      if (widget.geoMapController.visibleLayers[index] &&
+          layer.urlTemplate != null) {
+        layerOptions.add(TileLayerOptions(
+          urlTemplate: layer.urlTemplate,
+          additionalOptions: layer.options,
+          subdomains: layer.subdomains ?? [],
+        ));
+      }
+    });
+
+    return layerOptions;
+  }
+
+  MapOptions _createMapOptions() {
+    return MapOptions(
+      center: widget.geoMapController.center,
+      zoom: geoMap.zoom ?? 13,
+      minZoom: geoMap.minZoom,
+      maxZoom: geoMap.maxZoom,
+      // The CRS is currently ignored.
+      //debug: true,
+      plugins: [
+        UserLocationPlugin(),
+        if (clusterMarkers) MarkerClusterPlugin(),
+      ],
+    );
+  }
+
+  Widget _buildAttributionWidget(Object attribution) {
+    return Container(
+      alignment: Alignment.bottomLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 5, bottom: 2),
+        child: Opacity(
+          opacity: 0.75,
+          child: Text(
+            attribution.toString(),
+            style: TextStyle(
+              color: Colors.black,
+              backgroundColor: Colors.white,
+              fontSize: Theme.of(context).textTheme.caption.fontSize,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Marker> _createMarkers() {
+    var markers = <Marker>[];
+
+    var service = ApplicationProvider.of(context).service;
+    var list = widget.geoMapController.data; //(uiContext.value as List) ?? [];
+
+    for (int i = 0; i < list.length; i++) {
+      var element = list[i];
+
+      var geoPosition = widget.geoMapController.getElementGeoPositionByIndex(i);
+
+      if (geoPosition == null) {
+        continue;
+      }
+
+      var iconData = getIconData(service, element.features[Features.ICON]) ??
+          MdiIcons.marker;
+      var iconColor = string2color(element.features[Features.ICON_COLOR]);
+      var iconWidth =
+          (element.features[Features.ICON_WIDTH] as num)?.toDouble();
+      var icon = Icon(iconData, color: iconColor, size: iconWidth);
+      var label = element.valueLabel;
+
+      markers.add(
+        Marker(
+          width: iconWidth ?? 30.0,
+          height: (element.features[Features.ICON_HEIGHT] as num).toDouble() ??
+              30.0,
+          point: LatLng(geoPosition.latitude, geoPosition.longitude),
+          builder: (ctx) {
+            return SubActionsWidget.forListElement(
+              uiContext,
+              service.spongeService,
+              controller: _subActionsController,
+              element: element,
+              index: i,
+              menuIcon: icon,
+              tooltip: label,
+            );
+          },
+        ),
+      );
+    }
+
+    return markers;
+  }
+
+  MarkerClusterLayerOptions _createMarkerClusterLayerOptions(
+      List<Marker> markers) {
+    return MarkerClusterLayerOptions(
+      maxClusterRadius: 60,
+      size: Size(40, 40),
+      fitBoundsOptions: FitBoundsOptions(
+        padding: EdgeInsets.all(50),
+      ),
+      markers: markers,
+      polygonOptions: PolygonOptions(
+        borderColor: Colors.blueAccent,
+        color: Colors.black12,
+        borderStrokeWidth: 2,
+      ),
+      builder: (context, markers) {
+        return CircleAvatar(
+          backgroundColor: getPrimaryColor(context),
+          child: Text(markers.length.toString()),
+        );
+      },
+    );
+  }
+
+  UserLocationOptions _createUserLocationOptions(List<Marker> markers) {
+    return UserLocationOptions(
+      context: context,
+      mapController: widget.geoMapController.mapController,
+      markers: markers,
+      zoomToCurrentLocationOnLoad: false,
+      updateMapLocationOnPositionChange: false,
+      moveToCurrentLocationFloatingActionButton:
+          _buildMoveToCurrentLocationFloatingActionButton(),
+      fabBottom: widget.geoMapController.fabMargin,
+      fabRight: widget.geoMapController.fabMargin,
+      fabWidth: widget.geoMapController.fabSize,
+      fabHeight: widget.geoMapController.fabSize,
+    );
+  }
+
   Widget _buildMoveToCurrentLocationFloatingActionButton() => Opacity(
-      opacity: widget.configuration.fabOpacity,
+      opacity: widget.geoMapController.fabOpacity,
       child: FloatingActionButton(
         heroTag: 'fabMoveToCurrentLocation',
         onPressed: null,
@@ -191,16 +218,64 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
       ));
 }
 
-class GeoMapConfiguration {
-  GeoMapConfiguration({
+class GeoMapController {
+  GeoMapController({
+    @required this.geoMap,
+    @required this.uiContext,
+    this.center,
     this.fabOpacity = 0.85,
     this.fabSize = 50,
     this.fabMargin = 10,
-  });
+    List<bool> visibleLayers,
+    this.visibleData = true,
+    bool clusterMarkers = true,
+  })  : assert(clusterMarkers != null),
+        visibleLayers = visibleLayers ?? [],
+        clusterMarkers = clusterMarkers;
 
-  final double fabOpacity;
-  final double fabSize;
-  final double fabMargin;
+  final GeoMap geoMap;
+  final UiContext uiContext;
+
+  LatLng center;
+  double fabOpacity;
+  double fabSize;
+  double fabMargin;
+  List<bool> visibleLayers;
+  bool visibleData;
+  bool clusterMarkers;
+
+  final mapController = MapController();
+
+  List get data => (uiContext.value as List) ?? [];
+
+  GeoPosition getElementGeoPositionByIndex(int index) =>
+      getElementGeoPosition(data[index]);
+
+  GeoPosition getElementGeoPosition(dynamic element) {
+    if (!(element is AnnotatedValue)) {
+      return null;
+    }
+
+    // TODO Convert JSON Map to GeoPosition in a lower layer.
+    var geoPosition =
+        GeoPosition.fromJson(element.features[Features.GEO_POSITION]);
+    if (geoPosition?.latitude == null || geoPosition?.longitude == null) {
+      return null;
+    }
+
+    return geoPosition;
+  }
+
+  void moveToData() {
+    var geoPosition = data
+        .map(getElementGeoPosition)
+        .firstWhere((geoPosition) => geoPosition != null, orElse: () => null);
+    if (geoPosition?.latitude != null && geoPosition?.longitude != null) {
+      center = LatLng(geoPosition.latitude, geoPosition.longitude);
+
+      mapController.move(center, mapController.zoom);
+    }
+  }
 }
 
 class GeoMapPage extends StatefulWidget {
@@ -220,8 +295,25 @@ class GeoMapPage extends StatefulWidget {
 }
 
 class _GeoMapPageState extends State<GeoMapPage> {
-  final _configuration = GeoMapConfiguration();
+  GeoMapController _geoMapController;
   bool _fullScreen = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _geoMapController = GeoMapController(
+      geoMap: widget.geoMap,
+      uiContext: widget.uiContext,
+      center: widget.geoMap.center?.latitude != null &&
+              widget.geoMap.center?.longitude != null
+          ? LatLng(
+              widget.geoMap.center.latitude, widget.geoMap.center.longitude)
+          : null,
+      visibleLayers:
+          List.filled(widget.geoMap.layers.length, true, growable: true),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -241,17 +333,15 @@ class _GeoMapPageState extends State<GeoMapPage> {
         child: Stack(
           children: [
             GeoMapWidget(
-              geoMap: widget.geoMap,
-              configuration: _configuration,
-              uiContext: widget.uiContext,
+              geoMapController: _geoMapController,
             ),
             if (_fullScreen)
               Container(
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: EdgeInsets.only(
-                    right: _configuration.fabMargin,
-                    top: _configuration.fabMargin,
+                    right: _geoMapController.fabMargin,
+                    top: _geoMapController.fabMargin,
                   ),
                   child: _buildMenu(
                     context,
@@ -267,7 +357,7 @@ class _GeoMapPageState extends State<GeoMapPage> {
   }
 
   Widget _buildMenuIcon(BuildContext context) => Opacity(
-        opacity: _configuration.fabOpacity,
+        opacity: _geoMapController.fabOpacity,
         child: SizedBox(
           child: FloatingActionButton(
             heroTag: 'fabMenu',
@@ -275,33 +365,64 @@ class _GeoMapPageState extends State<GeoMapPage> {
             child: Icon(getPopupMenuIconData(context)),
             backgroundColor: getFloatingButtonBackgroudColor(context),
           ),
-          width: _configuration.fabSize,
-          height: _configuration.fabSize,
+          width: _geoMapController.fabSize,
+          height: _geoMapController.fabSize,
         ),
       );
 
-  Widget _buildMenu(BuildContext context, {Widget icon}) =>
-      PopupMenuButton<String>(
-        key: Key('map-menu'),
-        onSelected: (value) {
-          if (value == 'fullScreen') {
-            setState(() {
-              _fullScreen = !_fullScreen;
-            });
-          }
-        },
-        itemBuilder: (BuildContext context) => [
-          PopupMenuItem<String>(
-            key: Key('map-menu-fullScreen'),
-            value: 'fullScreen',
-            child: IconTextPopupMenuItemWidget(
-              icon: _fullScreen ? Icons.exit_to_app : Icons.fullscreen,
-              text: _fullScreen ? 'Exit full screen' : 'Enter full screen',
-            ),
-            //checked: _fullScreen,
+  Widget _buildMenu(BuildContext context, {Widget icon}) {
+    var layerItems = <CheckedPopupMenuItem<int>>[];
+    widget.geoMap.layers.asMap().forEach((index, layer) => layerItems.add(
+          CheckedPopupMenuItem<int>(
+            key: Key('map-menu-layer-$index'),
+            value: index,
+            child: Text(layer.label ?? layer.name ?? 'Layer ${index + 1}'),
+            checked: _geoMapController.visibleLayers[index],
           ),
-        ],
-        padding: EdgeInsets.zero,
-        icon: icon,
-      );
+        ));
+
+    return PopupMenuButton<Object>(
+      key: Key('map-menu'),
+      onSelected: (value) {
+        if (value == 'fullScreen') {
+          setState(() {
+            _fullScreen = !_fullScreen;
+          });
+        } else if (value == 'goToData') {
+          setState(() {
+            _geoMapController.moveToData();
+          });
+        } else if (value is int) {
+          setState(() {
+            _geoMapController.visibleLayers[value] =
+                !_geoMapController.visibleLayers[value];
+          });
+        }
+      },
+      itemBuilder: (BuildContext context) => [
+        PopupMenuItem<String>(
+          key: Key('map-menu-fullScreen'),
+          value: 'fullScreen',
+          child: IconTextPopupMenuItemWidget(
+            icon: _fullScreen ? Icons.exit_to_app : Icons.fullscreen,
+            text: _fullScreen ? 'Exit full screen' : 'Enter full screen',
+          ),
+          //checked: _fullScreen,
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-goToData'),
+          value: 'goToData',
+          child: IconTextPopupMenuItemWidget(
+            icon: Icons.list,
+            text: 'Go to data',
+          ),
+          //checked: _fullScreen,
+        ),
+        if (layerItems.isNotEmpty) PopupMenuDivider(),
+        ...layerItems,
+      ],
+      padding: EdgeInsets.zero,
+      icon: icon,
+    );
+  }
 }
