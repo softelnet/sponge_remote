@@ -44,24 +44,24 @@ class GeoMapController {
         enableCurrentLocation = enableCurrentLocation,
         followCurrentLocation = followCurrentLocation,
         fullScreen = fullScreen {
+    visibleLayers = List.filled(geoMap.layers.length, true, growable: true);
+
     center = geoMap.center?.latitude != null && geoMap.center?.longitude != null
         ? LatLng(geoMap.center.latitude, geoMap.center.longitude)
-        : null;
+        : _findDataPosition();
     zoom = geoMap.zoom ?? 13;
-
-    visibleLayers = List.filled(geoMap.layers.length, true, growable: true);
   }
 
   final GeoMap _geoMap;
   final UiContext uiContext;
 
+  // Settings for a specific map.
   LatLng center;
   double zoom;
-
   List<bool> visibleLayers;
   bool visibleData;
 
-  // TODO Preferences.
+  // Settings for all maps.
   bool enableClusterMarkers;
   bool enableCurrentLocation;
   bool followCurrentLocation;
@@ -98,12 +98,21 @@ class GeoMapController {
     return geoPosition;
   }
 
-  void moveToData() {
+  LatLng _findDataPosition() {
     var geoPosition = data
         .map(getElementGeoPosition)
         .firstWhere((geoPosition) => geoPosition != null, orElse: () => null);
     if (geoPosition?.latitude != null && geoPosition?.longitude != null) {
-      center = LatLng(geoPosition.latitude, geoPosition.longitude);
+      return LatLng(geoPosition.latitude, geoPosition.longitude);
+    }
+
+    return null;
+  }
+
+  void moveToData() {
+    var dataPosition = _findDataPosition();
+    if (dataPosition != null) {
+      center = dataPosition;
 
       mapController.move(center, mapController.zoom);
     }
