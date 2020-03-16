@@ -28,7 +28,8 @@ class GeoMapController {
     this.fabOpacity = 0.85,
     this.fabSize = 50,
     this.fabMargin = 10,
-    this.visibleData = true,
+    this.markerWidth = 30,
+    this.markerHeight = 30,
     bool enableClusterMarkers = true,
     bool enableCurrentLocation = true,
     bool followCurrentLocation = false,
@@ -44,7 +45,13 @@ class GeoMapController {
         enableCurrentLocation = enableCurrentLocation,
         followCurrentLocation = followCurrentLocation,
         fullScreen = fullScreen {
-    visibleLayers = List.filled(geoMap.layers.length, true, growable: true);
+    _layers = List.of(geoMap.layers ?? [], growable: true);
+    // Add a data layer if not configured explicitly.
+    if (!_layers.any((layer) => layer is GeoMarkerLayer)) {
+      _layers.add(GeoMarkerLayer(label: uiContext.safeTypeLabel));
+    }
+
+    visibleLayers = List.filled(_layers.length, true, growable: true);
 
     center = geoMap.center?.latitude != null && geoMap.center?.longitude != null
         ? LatLng(geoMap.center.latitude, geoMap.center.longitude)
@@ -59,7 +66,6 @@ class GeoMapController {
   LatLng center;
   double zoom;
   List<bool> visibleLayers;
-  bool visibleData;
 
   // Settings for all maps.
   bool enableClusterMarkers;
@@ -70,10 +76,14 @@ class GeoMapController {
   double fabOpacity;
   double fabSize;
   double fabMargin;
+  double markerWidth;
+  double markerHeight;
 
   double get minZoom => _geoMap.minZoom;
   double get maxZoom => _geoMap.maxZoom;
-  List<GeoLayer> get layers => _geoMap.layers ?? [];
+
+  List<GeoLayer> _layers;
+  List<GeoLayer> get layers => _layers;
   String get attribution => _geoMap.features[Features.GEO_ATTRIBUTION];
 
   final mapController = MapController();
@@ -117,6 +127,83 @@ class GeoMapController {
       mapController.move(center, mapController.zoom);
     }
   }
+
+  List<TileLayerOptions> createBaseLayers() {
+    var layerOptions = <TileLayerOptions>[];
+
+    _layers.asMap().forEach((index, layer) {
+      if (visibleLayers[index] &&
+          layer is GeoTileLayer &&
+          layer.urlTemplate != null) {
+        layerOptions.add(TileLayerOptions(
+          urlTemplate: layer.urlTemplate,
+          additionalOptions: layer.options,
+          subdomains: layer.subdomains ?? [],
+        ));
+      }
+    });
+
+    return layerOptions;
+  }
+
+  List<Marker> createMarkers(FlutterApplicationService service,
+      SubActionsController subActionsController) {
+    var markers = <Marker>[];
+
+    var layerVisibility = <String, bool>{};
+    _layers.asMap().forEach((index, layer) {
+      layerVisibility[layer.name] =
+          layer is GeoMarkerLayer && visibleLayers[index];
+    });
+
+    var list = data;
+
+    for (int i = 0; i < list.length; i++) {
+      var element = list[i];
+
+      var geoPosition = getElementGeoPositionByIndex(i);
+
+      if (geoPosition == null) {
+        continue;
+      }
+
+      var iconData = getIconData(service, element.features[Features.ICON]) ??
+          MdiIcons.marker;
+      var iconColor = string2color(element.features[Features.ICON_COLOR]) ??
+          getPrimaryDarkerColor(uiContext.context);
+      var iconWidth =
+          (element.features[Features.ICON_WIDTH] as num)?.toDouble();
+      var iconHeight =
+          (element.features[Features.ICON_HEIGHT] as num)?.toDouble();
+      var icon = Icon(iconData, color: iconColor, size: iconWidth);
+      var label = element.valueLabel;
+
+      var layerName = element.features[Features.GEO_LATER_NAME];
+
+      if (layerVisibility[layerName]) {
+        markers.add(
+          Marker(
+            width: iconWidth ?? markerWidth,
+            height: iconHeight ?? markerHeight,
+            point: LatLng(geoPosition.latitude, geoPosition.longitude),
+            builder: (ctx) {
+              return SubActionsWidget.forListElement(
+                uiContext,
+                service.spongeService,
+                controller: subActionsController,
+                element: element,
+                index: i,
+                menuIcon: icon,
+                tooltip: label,
+              );
+            },
+          ),
+        );
+      }
+    }
+
+    return markers;
+  }
 }
 
 class GeoMapWidget extends StatefulWidget {
@@ -146,9 +233,8 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     _subActionsController =
         SubActionsController.forList(uiContext, service.spongeService);
 
-    var visibleData = widget.geoMapController.visibleData;
-
-    List<Marker> markers = visibleData ? _createMarkers() : [];
+    var markers =
+        widget.geoMapController.createMarkers(service, _subActionsController);
     var attribution = widget.geoMapController.attribution;
 
     return Stack(
@@ -156,11 +242,9 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
         FlutterMap(
           options: _createMapOptions(),
           layers: [
-            ..._createBaseLayers(),
-            if (!clusterMarkers && visibleData)
-              MarkerLayerOptions(markers: markers),
-            if (clusterMarkers && visibleData)
-              _createMarkerClusterLayerOptions(markers),
+            ...widget.geoMapController.createBaseLayers(),
+            if (!clusterMarkers) MarkerLayerOptions(markers: markers),
+            if (clusterMarkers) _createMarkerClusterLayerOptions(markers),
             if (widget.geoMapController.enableCurrentLocation)
               _createUserLocationOptions(markers),
           ],
@@ -189,23 +273,6 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     );
   }
 
-  List<TileLayerOptions> _createBaseLayers() {
-    var layerOptions = <TileLayerOptions>[];
-
-    widget.geoMapController.layers.asMap().forEach((index, layer) {
-      if (widget.geoMapController.visibleLayers[index] &&
-          layer.urlTemplate != null) {
-        layerOptions.add(TileLayerOptions(
-          urlTemplate: layer.urlTemplate,
-          additionalOptions: layer.options,
-          subdomains: layer.subdomains ?? [],
-        ));
-      }
-    });
-
-    return layerOptions;
-  }
-
   Widget _buildAttributionWidget(Object attribution) {
     return Container(
       alignment: Alignment.bottomLeft,
@@ -224,53 +291,6 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
         ),
       ),
     );
-  }
-
-  List<Marker> _createMarkers() {
-    var markers = <Marker>[];
-
-    var service = ApplicationProvider.of(context).service;
-    var list = widget.geoMapController.data; //(uiContext.value as List) ?? [];
-
-    for (int i = 0; i < list.length; i++) {
-      var element = list[i];
-
-      var geoPosition = widget.geoMapController.getElementGeoPositionByIndex(i);
-
-      if (geoPosition == null) {
-        continue;
-      }
-
-      var iconData = getIconData(service, element.features[Features.ICON]) ??
-          MdiIcons.marker;
-      var iconColor = string2color(element.features[Features.ICON_COLOR]);
-      var iconWidth =
-          (element.features[Features.ICON_WIDTH] as num)?.toDouble();
-      var icon = Icon(iconData, color: iconColor, size: iconWidth);
-      var label = element.valueLabel;
-
-      markers.add(
-        Marker(
-          width: iconWidth ?? 30.0,
-          height: (element.features[Features.ICON_HEIGHT] as num).toDouble() ??
-              30.0,
-          point: LatLng(geoPosition.latitude, geoPosition.longitude),
-          builder: (ctx) {
-            return SubActionsWidget.forListElement(
-              uiContext,
-              service.spongeService,
-              controller: _subActionsController,
-              element: element,
-              index: i,
-              menuIcon: icon,
-              tooltip: label,
-            );
-          },
-        ),
-      );
-    }
-
-    return markers;
   }
 
   MarkerClusterLayerOptions _createMarkerClusterLayerOptions(
@@ -410,9 +430,7 @@ class _GeoMapPageState extends State<GeoMapPage> {
       key: Key('map-menu'),
       onSelected: (value) {
         setState(() {
-          if (value == 'visibleData') {
-            _geoMapController.visibleData = !_geoMapController.visibleData;
-          } else if (value == 'enableClusterMarkers') {
+          if (value == 'enableClusterMarkers') {
             _geoMapController.enableClusterMarkers =
                 !_geoMapController.enableClusterMarkers;
           } else if (value == 'moveToData') {
@@ -432,15 +450,6 @@ class _GeoMapPageState extends State<GeoMapPage> {
         });
       },
       itemBuilder: (BuildContext context) => [
-        PopupMenuItem<String>(
-          key: Key('map-menu-visibleData'),
-          value: 'visibleData',
-          child: IconTextPopupMenuItemWidget(
-            icon: MdiIcons.database,
-            text: 'Show data',
-            isOn: _geoMapController.visibleData,
-          ),
-        ),
         PopupMenuItem<String>(
           key: Key('map-menu-enableClusterMarkers'),
           value: 'enableClusterMarkers',
