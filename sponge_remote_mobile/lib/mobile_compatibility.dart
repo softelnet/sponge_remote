@@ -101,6 +101,10 @@ class MobileBinaryTypeGuiProvider extends BinaryTypeGuiProvider {
 class MobileListTypeGuiProvider extends ListTypeGuiProvider {
   MobileListTypeGuiProvider(DataType type) : super(type);
 
+  static const ADDITIONAL_DATA_KEY_CENTER = 'map.center';
+  static const ADDITIONAL_DATA_KEY_ZOOM = 'map.zoom';
+  static const ADDITIONAL_DATA_KEY_VISIBLE_LAYERS = 'map.visibleLayers';
+
   @override
   Widget doCreateEditor(TypeEditorContext editorContext) {
     var geoMap = GeoMap.fromJson(editorContext.features[Features.GEO_MAP]);
@@ -127,6 +131,13 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
             enableCurrentLocation: service.settings.mapEnableCurrentLocation,
             followCurrentLocation: service.settings.mapFollowCurrentLocation,
             fullScreen: service.settings.mapFullScreen,
+            initialCenter: editorContext.callbacks.getAdditionalData(
+                editorContext.qualifiedType, ADDITIONAL_DATA_KEY_CENTER),
+            initialZoom: editorContext.callbacks.getAdditionalData(
+                editorContext.qualifiedType, ADDITIONAL_DATA_KEY_ZOOM),
+            initialVisibleLayers: editorContext.callbacks.getAdditionalData(
+                editorContext.qualifiedType,
+                ADDITIONAL_DATA_KEY_VISIBLE_LAYERS),
           );
           await Navigator.push(
             editorContext.context,
@@ -146,6 +157,15 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
           await service.settings.setMapFollowCurrentLocation(
               geoMapController.followCurrentLocation);
           await service.settings.setMapFullScreen(geoMapController.fullScreen);
+
+          editorContext.callbacks.setAdditionalData(editorContext.qualifiedType,
+              ADDITIONAL_DATA_KEY_CENTER, geoMapController.center);
+          editorContext.callbacks.setAdditionalData(editorContext.qualifiedType,
+              ADDITIONAL_DATA_KEY_ZOOM, geoMapController.zoom);
+          editorContext.callbacks.setAdditionalData(
+              editorContext.qualifiedType,
+              ADDITIONAL_DATA_KEY_VISIBLE_LAYERS,
+              geoMapController.visibleLayers);
         },
       );
     } else {

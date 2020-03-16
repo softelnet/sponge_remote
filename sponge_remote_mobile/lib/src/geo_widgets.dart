@@ -34,6 +34,9 @@ class GeoMapController {
     bool enableCurrentLocation = true,
     bool followCurrentLocation = false,
     bool fullScreen = false,
+    LatLng initialCenter,
+    double initialZoom,
+    List<bool> initialVisibleLayers,
   })  : assert(geoMap != null),
         assert(uiContext != null),
         assert(enableClusterMarkers != null),
@@ -51,20 +54,19 @@ class GeoMapController {
       _layers.add(GeoMarkerLayer(label: uiContext.safeTypeLabel));
     }
 
-    visibleLayers = List.filled(_layers.length, true, growable: true);
-
-    center = geoMap.center?.latitude != null && geoMap.center?.longitude != null
-        ? LatLng(geoMap.center.latitude, geoMap.center.longitude)
-        : _findDataPosition();
-    zoom = geoMap.zoom ?? 13;
+    _setup(
+      initialCenter: initialCenter,
+      initialZoom: initialZoom,
+      initialVisibleLayers: initialVisibleLayers,
+    );
   }
 
   final GeoMap _geoMap;
   final UiContext uiContext;
 
   // Settings for a specific map.
-  LatLng center;
-  double zoom;
+  LatLng initialCenter;
+  double initialZoom;
   List<bool> visibleLayers;
 
   // Settings for all maps.
@@ -88,7 +90,28 @@ class GeoMapController {
 
   final mapController = MapController();
 
+  LatLng get center => mapController.center;
+  double get zoom => mapController.zoom;
+
   List get data => (uiContext.value as List) ?? [];
+
+  void _setup({
+    @required LatLng initialCenter,
+    @required double initialZoom,
+    @required List<bool> initialVisibleLayers,
+  }) {
+    visibleLayers = (initialVisibleLayers != null &&
+            initialVisibleLayers.length == _layers.length)
+        ? initialVisibleLayers
+        : List.filled(_layers.length, true, growable: true);
+
+    this.initialCenter = initialCenter ??
+        (_geoMap.center?.latitude != null && _geoMap.center?.longitude != null
+            ? LatLng(_geoMap.center.latitude, _geoMap.center.longitude)
+            : _findDataPosition());
+
+    this.initialZoom = initialZoom ?? _geoMap.zoom ?? 13;
+  }
 
   GeoPosition getElementGeoPositionByIndex(int index) =>
       getElementGeoPosition(data[index]);
@@ -122,9 +145,7 @@ class GeoMapController {
   void moveToData() {
     var dataPosition = _findDataPosition();
     if (dataPosition != null) {
-      center = dataPosition;
-
-      mapController.move(center, mapController.zoom);
+      mapController.move(dataPosition, mapController.zoom);
     }
   }
 
@@ -204,6 +225,16 @@ class GeoMapController {
 
     return markers;
   }
+
+  void reset() {
+    _setup(
+      initialCenter: null,
+      initialZoom: null,
+      initialVisibleLayers: null,
+    );
+
+    mapController.move(initialCenter, initialZoom);
+  }
 }
 
 class GeoMapWidget extends StatefulWidget {
@@ -257,15 +288,11 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
 
   MapOptions _createMapOptions() {
     return MapOptions(
-      center: widget.geoMapController.center,
-      zoom: widget.geoMapController.zoom,
+      center: widget.geoMapController.initialCenter,
+      zoom: widget.geoMapController.initialZoom,
       minZoom: widget.geoMapController.minZoom,
       maxZoom: widget.geoMapController.maxZoom,
       // The CRS is currently ignored.
-      onPositionChanged: (MapPosition position, bool hasGesture) {
-        widget.geoMapController.center = position.center;
-        widget.geoMapController.zoom = position.zoom;
-      },
       plugins: [
         if (clusterMarkers) MarkerClusterPlugin(),
         if (widget.geoMapController.enableCurrentLocation) UserLocationPlugin(),
@@ -443,6 +470,8 @@ class _GeoMapPageState extends State<GeoMapPage> {
                 !_geoMapController.followCurrentLocation;
           } else if (value == 'fullScreen') {
             _geoMapController.fullScreen = !_geoMapController.fullScreen;
+          } else if (value == 'reset') {
+            _geoMapController.reset();
           } else if (value is int) {
             _geoMapController.visibleLayers[value] =
                 !_geoMapController.visibleLayers[value];
@@ -493,6 +522,14 @@ class _GeoMapPageState extends State<GeoMapPage> {
             icon: Icons.fullscreen,
             text: 'Full screen',
             isOn: _geoMapController.fullScreen,
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-reset'),
+          value: 'reset',
+          child: IconTextPopupMenuItemWidget(
+            icon: Icons.restore,
+            text: 'Reset map',
           ),
         ),
         if (layerItems.isNotEmpty) PopupMenuDivider(),
