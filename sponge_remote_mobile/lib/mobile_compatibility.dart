@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:open_file/open_file.dart';
+import 'package:pedantic/pedantic.dart';
 
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
@@ -110,69 +111,95 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
     var geoMap = GeoMap.fromJson(editorContext.features[Features.GEO_MAP]);
 
     if (geoMap != null) {
-      var service = ApplicationProvider.of(editorContext.context).service;
+      if (editorContext.rootRecordSingleLeadingField != null &&
+          editorContext.rootRecordSingleLeadingField ==
+              editorContext.qualifiedType.path) {
+        return GeoMapContainer(
+          geoMapController:
+              _createGeoMapController(geoMap, editorContext, false),
+        );
+      } else {
+        var label = editorContext.getDecorationLabel();
 
-      var label = editorContext.getDecorationLabel();
-
-      return FlatButton.icon(
-        key: Key('open-map'),
-        color: Theme.of(editorContext.context).primaryColor,
-        textColor: Colors.white,
-        label: Text(label?.toUpperCase() ?? 'MAP'),
-        icon: Icon(
-          Icons.map,
-          color: getIconColor(editorContext.context),
-        ),
-        onPressed: () async {
-          var geoMapController = GeoMapController(
-            geoMap: geoMap,
-            uiContext: editorContext,
-            enableClusterMarkers: service.settings.mapEnableClusterMarkers,
-            enableMarkerBadges: service.settings.mapEnableMarkerBadges,
-            enableCurrentLocation: service.settings.mapEnableCurrentLocation,
-            followCurrentLocation: service.settings.mapFollowCurrentLocation,
-            fullScreen: service.settings.mapFullScreen,
-            initialCenter: editorContext.callbacks.getAdditionalData(
-                editorContext.qualifiedType, ADDITIONAL_DATA_KEY_CENTER),
-            initialZoom: editorContext.callbacks.getAdditionalData(
-                editorContext.qualifiedType, ADDITIONAL_DATA_KEY_ZOOM),
-            initialVisibleLayers: editorContext.callbacks.getAdditionalData(
-                editorContext.qualifiedType,
-                ADDITIONAL_DATA_KEY_VISIBLE_LAYERS),
-          );
-          await Navigator.push(
-            editorContext.context,
-            createPageRoute(
+        return FlatButton.icon(
+          key: Key('open-map'),
+          color: Theme.of(editorContext.context).primaryColor,
+          textColor: Colors.white,
+          label: Text(label?.toUpperCase() ?? 'MAP'),
+          icon: Icon(
+            Icons.map,
+            color: getIconColor(editorContext.context),
+          ),
+          onPressed: () async {
+            await Navigator.push(
               editorContext.context,
-              builder: (context) => GeoMapPage(
-                title: label ?? 'Map',
-                geoMapController: geoMapController,
+              createPageRoute(
+                editorContext.context,
+                builder: (context) => GeoMapPage(
+                  title: label ?? 'Map',
+                  geoMapController:
+                      _createGeoMapController(geoMap, editorContext, true),
+                ),
               ),
-            ),
-          );
-
-          await service.settings.setMapEnableClusterMarkers(
-              geoMapController.enableClusterMarkers);
-          await service.settings
-              .setMapEnableMarkerBadges(geoMapController.enableMarkerBadges);
-          await service.settings.setMapEnableCurrentLocation(
-              geoMapController.enableCurrentLocation);
-          await service.settings.setMapFollowCurrentLocation(
-              geoMapController.followCurrentLocation);
-          await service.settings.setMapFullScreen(geoMapController.fullScreen);
-
-          editorContext.callbacks.setAdditionalData(editorContext.qualifiedType,
-              ADDITIONAL_DATA_KEY_CENTER, geoMapController.center);
-          editorContext.callbacks.setAdditionalData(editorContext.qualifiedType,
-              ADDITIONAL_DATA_KEY_ZOOM, geoMapController.zoom);
-          editorContext.callbacks.setAdditionalData(
-              editorContext.qualifiedType,
-              ADDITIONAL_DATA_KEY_VISIBLE_LAYERS,
-              geoMapController.visibleLayers);
-        },
-      );
+            );
+          },
+        );
+      }
     } else {
       return super.doCreateEditor(editorContext);
     }
+  }
+
+  GeoMapController _createGeoMapController(
+      GeoMap geoMap, UiContext uiContext, bool enableFullScreen) {
+    var service = uiContext.service;
+
+    return GeoMapController(
+      geoMap: geoMap,
+      uiContext: uiContext,
+      enableClusterMarkers: service.settings.mapEnableClusterMarkers,
+      enableMarkerBadges: service.settings.mapEnableMarkerBadges,
+      enableCurrentLocation: service.settings.mapEnableCurrentLocation,
+      followCurrentLocation: service.settings.mapFollowCurrentLocation,
+      fullScreen: service.settings.mapFullScreen,
+      initialCenter: uiContext.callbacks.getAdditionalData(
+          uiContext.qualifiedType, ADDITIONAL_DATA_KEY_CENTER),
+      initialZoom: uiContext.callbacks
+          .getAdditionalData(uiContext.qualifiedType, ADDITIONAL_DATA_KEY_ZOOM),
+      initialVisibleLayers: uiContext.callbacks.getAdditionalData(
+          uiContext.qualifiedType, ADDITIONAL_DATA_KEY_VISIBLE_LAYERS),
+      onMapClose: _onMapClose,
+      enableFullScreen: enableFullScreen,
+    );
+  }
+
+  void _onMapClose(GeoMapController controller) {
+    _saveMapState(controller);
+    unawaited(_saveMapStateAsync(controller));
+  }
+
+  void _saveMapState(GeoMapController controller) {
+    var uiContext = controller.uiContext;
+
+    uiContext.callbacks.setAdditionalData(
+        uiContext.qualifiedType, ADDITIONAL_DATA_KEY_CENTER, controller.center);
+    uiContext.callbacks.setAdditionalData(
+        uiContext.qualifiedType, ADDITIONAL_DATA_KEY_ZOOM, controller.zoom);
+    uiContext.callbacks.setAdditionalData(uiContext.qualifiedType,
+        ADDITIONAL_DATA_KEY_VISIBLE_LAYERS, controller.visibleLayers);
+  }
+
+  Future<void> _saveMapStateAsync(GeoMapController controller) async {
+    var service = controller.uiContext.service;
+
+    await service.settings
+        .setMapEnableClusterMarkers(controller.enableClusterMarkers);
+    await service.settings
+        .setMapEnableMarkerBadges(controller.enableMarkerBadges);
+    await service.settings
+        .setMapEnableCurrentLocation(controller.enableCurrentLocation);
+    await service.settings
+        .setMapFollowCurrentLocation(controller.followCurrentLocation);
+    await service.settings.setMapFullScreen(controller.fullScreen);
   }
 }

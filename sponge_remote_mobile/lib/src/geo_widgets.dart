@@ -22,6 +22,8 @@ import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:user_location/user_location.dart';
 
+typedef void OnMapCloseCallback(GeoMapController geoMapController);
+
 class GeoMapController {
   GeoMapController({
     @required GeoMap geoMap,
@@ -40,6 +42,8 @@ class GeoMapController {
     double initialZoom,
     List<bool> initialVisibleLayers,
     this.showMarkerMenuHeader = true,
+    this.onMapClose,
+    this.enableFullScreen = false,
   })  : assert(geoMap != null),
         assert(uiContext != null),
         assert(enableClusterMarkers != null),
@@ -48,6 +52,7 @@ class GeoMapController {
         assert(followCurrentLocation != null),
         assert(fullScreen != null),
         assert(showMarkerMenuHeader != null),
+        assert(enableFullScreen != null),
         _geoMap = geoMap,
         enableClusterMarkers = enableClusterMarkers,
         enableMarkerBadges = enableMarkerBadges,
@@ -89,6 +94,9 @@ class GeoMapController {
   double markerHeight;
 
   bool showMarkerMenuHeader;
+
+  OnMapCloseCallback onMapClose;
+  final bool enableFullScreen;
 
   double get minZoom => _geoMap.minZoom;
   double get maxZoom => _geoMap.maxZoom;
@@ -263,6 +271,129 @@ class GeoMapController {
 
     mapController.move(initialCenter, initialZoom);
   }
+
+  Widget buildMenuIcon(BuildContext context) => Opacity(
+        opacity: fabOpacity,
+        child: SizedBox(
+          child: FloatingActionButton(
+            heroTag: 'fabMenu',
+            onPressed: null,
+            child: Icon(getPopupMenuIconData(context)),
+            backgroundColor: getFloatingButtonBackgroudColor(context),
+          ),
+          width: fabSize,
+          height: fabSize,
+        ),
+      );
+
+  Widget buildMenu(BuildContext context, VoidCallback onRefresh,
+      {Widget icon}) {
+    var layerItems = <CheckedPopupMenuItem<int>>[];
+    layers.asMap().forEach((index, layer) => layerItems.add(
+          CheckedPopupMenuItem<int>(
+            key: Key('map-menu-layer-$index'),
+            value: index,
+            child: Text(layer.label ?? layer.name ?? 'Layer ${index + 1}'),
+            checked: visibleLayers[index],
+          ),
+        ));
+
+    return PopupMenuButton<Object>(
+      key: Key('map-menu'),
+      onSelected: (value) {
+        if (value == 'enableClusterMarkers') {
+          enableClusterMarkers = !enableClusterMarkers;
+        } else if (value == 'enableMarkerBadges') {
+          enableMarkerBadges = !enableMarkerBadges;
+        } else if (value == 'moveToData') {
+          moveToData();
+        } else if (value == 'enableCurrentLocation') {
+          enableCurrentLocation = !enableCurrentLocation;
+        } else if (value == 'followCurrentLocation') {
+          followCurrentLocation = !followCurrentLocation;
+        } else if (value == 'reset') {
+          reset();
+        } else if (value == 'fullScreen') {
+          fullScreen = !fullScreen;
+        } else if (value is int) {
+          visibleLayers[value] = !visibleLayers[value];
+        }
+
+        if (onRefresh != null) {
+          onRefresh();
+        }
+      },
+      itemBuilder: (BuildContext context) => [
+        PopupMenuItem<String>(
+          key: Key('map-menu-enableClusterMarkers'),
+          value: 'enableClusterMarkers',
+          child: IconTextPopupMenuItemWidget(
+            icon: MdiIcons.mapMarker,
+            text: 'Cluster data markers',
+            isOn: enableClusterMarkers,
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-enableMarkerBadges'),
+          value: 'enableMarkerBadges',
+          child: IconTextPopupMenuItemWidget(
+            icon: MdiIcons.label,
+            text: 'Show marker badges',
+            isOn: enableMarkerBadges,
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-moveToData'),
+          value: 'moveToData',
+          child: IconTextPopupMenuItemWidget(
+            icon: Icons.list,
+            text: 'Move to data',
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-enableCurrentLocation'),
+          value: 'enableCurrentLocation',
+          child: IconTextPopupMenuItemWidget(
+            icon: MdiIcons.crosshairsGps,
+            text: 'Show current location',
+            isOn: enableCurrentLocation,
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-followCurrentLocation'),
+          value: 'followCurrentLocation',
+          child: IconTextPopupMenuItemWidget(
+            icon: MdiIcons.locationEnter,
+            text: 'Follow current location',
+            isOn: followCurrentLocation,
+          ),
+          enabled: enableCurrentLocation,
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-reset'),
+          value: 'reset',
+          child: IconTextPopupMenuItemWidget(
+            icon: Icons.restore,
+            text: 'Reset map',
+          ),
+        ),
+        if (enableFullScreen)
+          PopupMenuItem<String>(
+            key: Key('map-menu-fullScreen'),
+            value: 'fullScreen',
+            child: IconTextPopupMenuItemWidget(
+              icon: Icons.fullscreen,
+              text: 'Full screen',
+              isOn: fullScreen,
+            ),
+          ),
+        if (layerItems.isNotEmpty) PopupMenuDivider(),
+        ...layerItems,
+      ],
+      padding: EdgeInsets.zero,
+      icon: icon,
+    );
+  }
 }
 
 class GeoMapWidget extends StatefulWidget {
@@ -398,6 +529,64 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
       ));
 }
 
+class GeoMapContainer extends StatefulWidget {
+  GeoMapContainer({
+    @required this.geoMapController,
+    this.onRefresh,
+  });
+
+  final GeoMapController geoMapController;
+  final VoidCallback onRefresh;
+
+  @override
+  _GeoMapContainerState createState() => _GeoMapContainerState();
+}
+
+class _GeoMapContainerState extends State<GeoMapContainer> {
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GeoMapWidget(
+          geoMapController: widget.geoMapController,
+        ),
+        // TODO Full screen!!!
+        //if (widget.geoMapController.fullScreen)
+        Container(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: widget.geoMapController.fabMargin,
+              top: widget.geoMapController.fabMargin,
+            ),
+            child: widget.geoMapController.buildMenu(
+              context,
+              widget.onRefresh != null
+                  ? widget.onRefresh
+                  : () => setState(() {}),
+              icon: widget.geoMapController.buildMenuIcon(context),
+              //),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    // return GeoMapWidget(
+    //   geoMapController: widget.geoMapController,
+    // );
+  }
+
+  @override
+  void deactivate() {
+    if (widget.geoMapController.onMapClose != null) {
+      widget.geoMapController.onMapClose(widget.geoMapController);
+    }
+
+    super.deactivate();
+  }
+}
+
 class GeoMapPage extends StatefulWidget {
   GeoMapPage({
     Key key,
@@ -425,158 +614,19 @@ class _GeoMapPageState extends State<GeoMapPage> {
                 message: widget.title,
                 child: Text(widget.title),
               ),
-              actions: <Widget>[
-                _buildMenu(context),
-              ],
+              // actions: <Widget>[
+              //   _geoMapController.buildMenu(
+              //     context,
+              //     () => setState(() {}),
+              //   ),
+              // ],
             ),
       body: SafeArea(
-        child: Stack(
-          children: [
-            GeoMapWidget(
-              geoMapController: _geoMapController,
-            ),
-            if (_geoMapController.fullScreen)
-              Container(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: _geoMapController.fabMargin,
-                    top: _geoMapController.fabMargin,
-                  ),
-                  child: _buildMenu(
-                    context,
-                    icon: _buildMenuIcon(context),
-                    //),
-                  ),
-                ),
-              ),
-          ],
+        child: GeoMapContainer(
+          geoMapController: _geoMapController,
+          onRefresh: () => setState(() {}),
         ),
       ),
-    );
-  }
-
-  Widget _buildMenuIcon(BuildContext context) => Opacity(
-        opacity: _geoMapController.fabOpacity,
-        child: SizedBox(
-          child: FloatingActionButton(
-            heroTag: 'fabMenu',
-            onPressed: null,
-            child: Icon(getPopupMenuIconData(context)),
-            backgroundColor: getFloatingButtonBackgroudColor(context),
-          ),
-          width: _geoMapController.fabSize,
-          height: _geoMapController.fabSize,
-        ),
-      );
-
-  Widget _buildMenu(BuildContext context, {Widget icon}) {
-    var layerItems = <CheckedPopupMenuItem<int>>[];
-    _geoMapController.layers.asMap().forEach((index, layer) => layerItems.add(
-          CheckedPopupMenuItem<int>(
-            key: Key('map-menu-layer-$index'),
-            value: index,
-            child: Text(layer.label ?? layer.name ?? 'Layer ${index + 1}'),
-            checked: _geoMapController.visibleLayers[index],
-          ),
-        ));
-
-    return PopupMenuButton<Object>(
-      key: Key('map-menu'),
-      onSelected: (value) {
-        setState(() {
-          if (value == 'enableClusterMarkers') {
-            _geoMapController.enableClusterMarkers =
-                !_geoMapController.enableClusterMarkers;
-          } else if (value == 'enableMarkerBadges') {
-            _geoMapController.enableMarkerBadges =
-                !_geoMapController.enableMarkerBadges;
-          } else if (value == 'moveToData') {
-            _geoMapController.moveToData();
-          } else if (value == 'enableCurrentLocation') {
-            _geoMapController.enableCurrentLocation =
-                !_geoMapController.enableCurrentLocation;
-          } else if (value == 'followCurrentLocation') {
-            _geoMapController.followCurrentLocation =
-                !_geoMapController.followCurrentLocation;
-          } else if (value == 'reset') {
-            _geoMapController.reset();
-          } else if (value == 'fullScreen') {
-            _geoMapController.fullScreen = !_geoMapController.fullScreen;
-          } else if (value is int) {
-            _geoMapController.visibleLayers[value] =
-                !_geoMapController.visibleLayers[value];
-          }
-        });
-      },
-      itemBuilder: (BuildContext context) => [
-        PopupMenuItem<String>(
-          key: Key('map-menu-enableClusterMarkers'),
-          value: 'enableClusterMarkers',
-          child: IconTextPopupMenuItemWidget(
-            icon: MdiIcons.mapMarker,
-            text: 'Cluster data markers',
-            isOn: _geoMapController.enableClusterMarkers,
-          ),
-        ),
-        PopupMenuItem<String>(
-          key: Key('map-menu-enableMarkerBadges'),
-          value: 'enableMarkerBadges',
-          child: IconTextPopupMenuItemWidget(
-            icon: MdiIcons.label,
-            text: 'Show marker badges',
-            isOn: _geoMapController.enableMarkerBadges,
-          ),
-        ),
-        PopupMenuItem<String>(
-          key: Key('map-menu-moveToData'),
-          value: 'moveToData',
-          child: IconTextPopupMenuItemWidget(
-            icon: Icons.list,
-            text: 'Move to data',
-          ),
-        ),
-        PopupMenuItem<String>(
-          key: Key('map-menu-enableCurrentLocation'),
-          value: 'enableCurrentLocation',
-          child: IconTextPopupMenuItemWidget(
-            icon: MdiIcons.crosshairsGps,
-            text: 'Show current location',
-            isOn: _geoMapController.enableCurrentLocation,
-          ),
-        ),
-        PopupMenuItem<String>(
-          key: Key('map-menu-followCurrentLocation'),
-          value: 'followCurrentLocation',
-          child: IconTextPopupMenuItemWidget(
-            icon: MdiIcons.locationEnter,
-            text: 'Follow current location',
-            isOn: _geoMapController.followCurrentLocation,
-          ),
-          enabled: _geoMapController.enableCurrentLocation,
-        ),
-        PopupMenuItem<String>(
-          key: Key('map-menu-reset'),
-          value: 'reset',
-          child: IconTextPopupMenuItemWidget(
-            icon: Icons.restore,
-            text: 'Reset map',
-          ),
-        ),
-        PopupMenuItem<String>(
-          key: Key('map-menu-fullScreen'),
-          value: 'fullScreen',
-          child: IconTextPopupMenuItemWidget(
-            icon: Icons.fullscreen,
-            text: 'Full screen',
-            isOn: _geoMapController.fullScreen,
-          ),
-        ),
-        if (layerItems.isNotEmpty) PopupMenuDivider(),
-        ...layerItems,
-      ],
-      padding: EdgeInsets.zero,
-      icon: icon,
     );
   }
 }
