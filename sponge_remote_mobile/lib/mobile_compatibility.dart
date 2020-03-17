@@ -128,6 +128,7 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
             geoMap: geoMap,
             uiContext: editorContext,
             enableClusterMarkers: service.settings.mapEnableClusterMarkers,
+            enableMarkerBadges: service.settings.mapEnableMarkerBadges,
             enableCurrentLocation: service.settings.mapEnableCurrentLocation,
             followCurrentLocation: service.settings.mapFollowCurrentLocation,
             fullScreen: service.settings.mapFullScreen,
@@ -152,6 +153,8 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
 
           await service.settings.setMapEnableClusterMarkers(
               geoMapController.enableClusterMarkers);
+          await service.settings
+              .setMapEnableMarkerBadges(geoMapController.enableMarkerBadges);
           await service.settings.setMapEnableCurrentLocation(
               geoMapController.enableCurrentLocation);
           await service.settings.setMapFollowCurrentLocation(

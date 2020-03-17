@@ -32,9 +32,9 @@ class GeoMapController {
     this.markerWidth = 30,
     this.markerHeight = 30,
     bool enableClusterMarkers = true,
+    bool enableMarkerBadges = false,
     bool enableCurrentLocation = true,
     bool followCurrentLocation = false,
-    bool showBadges = false,
     bool fullScreen = false,
     LatLng initialCenter,
     double initialZoom,
@@ -43,16 +43,16 @@ class GeoMapController {
   })  : assert(geoMap != null),
         assert(uiContext != null),
         assert(enableClusterMarkers != null),
+        assert(enableMarkerBadges != null),
         assert(enableCurrentLocation != null),
         assert(followCurrentLocation != null),
-        assert(showBadges != null),
         assert(fullScreen != null),
         assert(showMarkerMenuHeader != null),
         _geoMap = geoMap,
         enableClusterMarkers = enableClusterMarkers,
+        enableMarkerBadges = enableMarkerBadges,
         enableCurrentLocation = enableCurrentLocation,
         followCurrentLocation = followCurrentLocation,
-        showBadges = showBadges,
         fullScreen = fullScreen {
     _layers = List.of(geoMap.layers ?? [], growable: true);
     // Add a data layer if not configured explicitly.
@@ -77,9 +77,9 @@ class GeoMapController {
 
   // Settings for all maps.
   bool enableClusterMarkers;
+  bool enableMarkerBadges;
   bool enableCurrentLocation;
   bool followCurrentLocation;
-  bool showBadges;
   bool fullScreen;
 
   double fabOpacity;
@@ -234,7 +234,7 @@ class GeoMapController {
                 controller: subActionsController,
                 element: element,
                 index: i,
-                menuIcon: showBadges
+                menuIcon: enableMarkerBadges
                     ? Badge(
                         child: icon,
                         badgeContent: Text(label),
@@ -488,8 +488,9 @@ class _GeoMapPageState extends State<GeoMapPage> {
           if (value == 'enableClusterMarkers') {
             _geoMapController.enableClusterMarkers =
                 !_geoMapController.enableClusterMarkers;
-          } else if (value == 'showBadges') {
-            _geoMapController.showBadges = !_geoMapController.showBadges;
+          } else if (value == 'enableMarkerBadges') {
+            _geoMapController.enableMarkerBadges =
+                !_geoMapController.enableMarkerBadges;
           } else if (value == 'moveToData') {
             _geoMapController.moveToData();
           } else if (value == 'enableCurrentLocation') {
@@ -519,12 +520,12 @@ class _GeoMapPageState extends State<GeoMapPage> {
           ),
         ),
         PopupMenuItem<String>(
-          key: Key('map-menu-showBadges'),
-          value: 'showBadges',
+          key: Key('map-menu-enableMarkerBadges'),
+          value: 'enableMarkerBadges',
           child: IconTextPopupMenuItemWidget(
             icon: MdiIcons.label,
             text: 'Show marker badges',
-            isOn: _geoMapController.showBadges,
+            isOn: _geoMapController.enableMarkerBadges,
           ),
         ),
         PopupMenuItem<String>(
