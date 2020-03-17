@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
@@ -33,20 +34,25 @@ class GeoMapController {
     bool enableClusterMarkers = true,
     bool enableCurrentLocation = true,
     bool followCurrentLocation = false,
+    bool showBadges = false,
     bool fullScreen = false,
     LatLng initialCenter,
     double initialZoom,
     List<bool> initialVisibleLayers,
+    this.showMarkerMenuHeader = true,
   })  : assert(geoMap != null),
         assert(uiContext != null),
         assert(enableClusterMarkers != null),
         assert(enableCurrentLocation != null),
         assert(followCurrentLocation != null),
+        assert(showBadges != null),
         assert(fullScreen != null),
+        assert(showMarkerMenuHeader != null),
         _geoMap = geoMap,
         enableClusterMarkers = enableClusterMarkers,
         enableCurrentLocation = enableCurrentLocation,
         followCurrentLocation = followCurrentLocation,
+        showBadges = showBadges,
         fullScreen = fullScreen {
     _layers = List.of(geoMap.layers ?? [], growable: true);
     // Add a data layer if not configured explicitly.
@@ -73,6 +79,7 @@ class GeoMapController {
   bool enableClusterMarkers;
   bool enableCurrentLocation;
   bool followCurrentLocation;
+  bool showBadges;
   bool fullScreen;
 
   double fabOpacity;
@@ -80,6 +87,8 @@ class GeoMapController {
   double fabMargin;
   double markerWidth;
   double markerHeight;
+
+  bool showMarkerMenuHeader;
 
   double get minZoom => _geoMap.minZoom;
   double get maxZoom => _geoMap.maxZoom;
@@ -132,7 +141,11 @@ class GeoMapController {
   }
 
   LatLng _findDataPosition() {
+    var layerVisibility = _getLayerVisibility();
+
     var geoPosition = data
+        .where((element) =>
+            layerVisibility[element.features[Features.GEO_LATER_NAME]])
         .map(getElementGeoPosition)
         .firstWhere((geoPosition) => geoPosition != null, orElse: () => null);
     if (geoPosition?.latitude != null && geoPosition?.longitude != null) {
@@ -167,17 +180,24 @@ class GeoMapController {
     return layerOptions;
   }
 
-  List<Marker> createMarkers(FlutterApplicationService service,
-      SubActionsController subActionsController) {
-    var markers = <Marker>[];
-
+  Map<String, bool> _getLayerVisibility() {
     var layerVisibility = <String, bool>{};
     _layers.asMap().forEach((index, layer) {
       layerVisibility[layer.name] =
           layer is GeoMarkerLayer && visibleLayers[index];
     });
 
+    return layerVisibility;
+  }
+
+  List<Marker> createMarkers(FlutterApplicationService service,
+      SubActionsController subActionsController) {
+    var markers = <Marker>[];
+
+    var layerVisibility = _getLayerVisibility();
     var list = data;
+
+    var badgeColor = getPrimaryDarkerColor(uiContext.context).withOpacity(0.75);
 
     for (int i = 0; i < list.length; i++) {
       var element = list[i];
@@ -214,7 +234,15 @@ class GeoMapController {
                 controller: subActionsController,
                 element: element,
                 index: i,
-                menuIcon: icon,
+                menuIcon: showBadges
+                    ? Badge(
+                        child: icon,
+                        badgeContent: Text(label),
+                        shape: BadgeShape.square,
+                        badgeColor: badgeColor,
+                      )
+                    : icon,
+                header: showMarkerMenuHeader ? Text(label) : null,
                 tooltip: label,
               );
             },
@@ -460,6 +488,8 @@ class _GeoMapPageState extends State<GeoMapPage> {
           if (value == 'enableClusterMarkers') {
             _geoMapController.enableClusterMarkers =
                 !_geoMapController.enableClusterMarkers;
+          } else if (value == 'showBadges') {
+            _geoMapController.showBadges = !_geoMapController.showBadges;
           } else if (value == 'moveToData') {
             _geoMapController.moveToData();
           } else if (value == 'enableCurrentLocation') {
@@ -468,10 +498,10 @@ class _GeoMapPageState extends State<GeoMapPage> {
           } else if (value == 'followCurrentLocation') {
             _geoMapController.followCurrentLocation =
                 !_geoMapController.followCurrentLocation;
-          } else if (value == 'fullScreen') {
-            _geoMapController.fullScreen = !_geoMapController.fullScreen;
           } else if (value == 'reset') {
             _geoMapController.reset();
+          } else if (value == 'fullScreen') {
+            _geoMapController.fullScreen = !_geoMapController.fullScreen;
           } else if (value is int) {
             _geoMapController.visibleLayers[value] =
                 !_geoMapController.visibleLayers[value];
@@ -486,6 +516,15 @@ class _GeoMapPageState extends State<GeoMapPage> {
             icon: MdiIcons.mapMarker,
             text: 'Cluster data markers',
             isOn: _geoMapController.enableClusterMarkers,
+          ),
+        ),
+        PopupMenuItem<String>(
+          key: Key('map-menu-showBadges'),
+          value: 'showBadges',
+          child: IconTextPopupMenuItemWidget(
+            icon: MdiIcons.label,
+            text: 'Show marker badges',
+            isOn: _geoMapController.showBadges,
           ),
         ),
         PopupMenuItem<String>(
@@ -516,20 +555,20 @@ class _GeoMapPageState extends State<GeoMapPage> {
           enabled: _geoMapController.enableCurrentLocation,
         ),
         PopupMenuItem<String>(
+          key: Key('map-menu-reset'),
+          value: 'reset',
+          child: IconTextPopupMenuItemWidget(
+            icon: Icons.restore,
+            text: 'Reset map',
+          ),
+        ),
+        PopupMenuItem<String>(
           key: Key('map-menu-fullScreen'),
           value: 'fullScreen',
           child: IconTextPopupMenuItemWidget(
             icon: Icons.fullscreen,
             text: 'Full screen',
             isOn: _geoMapController.fullScreen,
-          ),
-        ),
-        PopupMenuItem<String>(
-          key: Key('map-menu-reset'),
-          value: 'reset',
-          child: IconTextPopupMenuItemWidget(
-            icon: Icons.restore,
-            text: 'Reset map',
           ),
         ),
         if (layerItems.isNotEmpty) PopupMenuDivider(),
