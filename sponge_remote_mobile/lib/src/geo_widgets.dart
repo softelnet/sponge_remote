@@ -107,8 +107,8 @@ class GeoMapController {
 
   final mapController = MapController();
 
-  LatLng get center => mapController.center;
-  double get zoom => mapController.zoom;
+  LatLng center;
+  double zoom;
 
   List get data => (uiContext.value as List) ?? [];
 
@@ -128,6 +128,9 @@ class GeoMapController {
             : _findDataPosition());
 
     this.initialZoom = initialZoom ?? _geoMap.zoom ?? 13;
+
+    center = initialCenter;
+    zoom = initialZoom;
   }
 
   GeoPosition getElementGeoPositionByIndex(int index) =>
@@ -447,16 +450,21 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
 
   MapOptions _createMapOptions() {
     return MapOptions(
-      center: widget.geoMapController.initialCenter,
-      zoom: widget.geoMapController.initialZoom,
-      minZoom: widget.geoMapController.minZoom,
-      maxZoom: widget.geoMapController.maxZoom,
-      // The CRS is currently ignored.
-      plugins: [
-        if (clusterMarkers) MarkerClusterPlugin(),
-        if (widget.geoMapController.enableCurrentLocation) UserLocationPlugin(),
-      ],
-    );
+        center: widget.geoMapController.initialCenter,
+        zoom: widget.geoMapController.initialZoom,
+        minZoom: widget.geoMapController.minZoom,
+        maxZoom: widget.geoMapController.maxZoom,
+        // The CRS is currently ignored.
+        plugins: [
+          if (clusterMarkers) MarkerClusterPlugin(),
+          if (widget.geoMapController.enableCurrentLocation)
+            UserLocationPlugin(),
+        ],
+        onPositionChanged: (MapPosition position, bool hasGesture) {
+          // Update the map position in the geo map controller.
+          widget.geoMapController.center = position.center;
+          widget.geoMapController.zoom = position.zoom;
+        });
   }
 
   Widget _buildAttributionWidget(Object attribution) {
