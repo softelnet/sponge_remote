@@ -99,14 +99,14 @@ class MobileApplicationService
 
   @override
   Future<MobileSpongeService> createSpongeService(
-          SpongeConnection connection, TypeConverter typeConverter) async =>
-      MobileSpongeService(connection, typeConverter, typeGuiProvider);
+          SpongeConnection connection, TypeConverter typeConverter, FeatureConverter featureConverter,) async =>
+      MobileSpongeService(connection, typeConverter, featureConverter, typeGuiProvider,);
 }
 
 class MobileSpongeService extends FlutterSpongeService {
-  MobileSpongeService(SpongeConnection connection, TypeConverter typeConverter,
+  MobileSpongeService(SpongeConnection connection, TypeConverter typeConverter, FeatureConverter featureConverter,
       TypeGuiProvider typeGuiProvider)
-      : super(connection, typeConverter, typeGuiProvider);
+      : super(connection, typeConverter, featureConverter, typeGuiProvider);
 
   // @override
   // SpongeGrpcClient createSpongeGrpcClient(

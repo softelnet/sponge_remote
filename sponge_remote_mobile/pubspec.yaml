@@ -13,18 +13,20 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
 
-  path_provider: ^1.6.0
-  flutter_local_notifications: ^1.1.5+1
+  path_provider: ^1.6.5
+  flutter_local_notifications: ^1.2.2
   multicast_dns: ^0.2.2
-  connectivity: ^0.4.6+2
+  connectivity: ^0.4.8+2
   flutter_map: ^0.8.2
   user_location: ^0.1.2
   flutter_map_marker_cluster: ^0.2.7
   badges: ^1.1.1
 
+  scrollable_positioned_list: ^0.1.2
+
   logging: ^0.11.4
 
-  material_design_icons_flutter: ^3.4.4895
+  material_design_icons_flutter: ^4.0.5045
 
   sponge_flutter_api:
     path: ../../sponge_flutter_api

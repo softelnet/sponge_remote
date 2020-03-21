@@ -65,6 +65,11 @@ class GeoMapController {
       _layers.add(GeoMarkerLayer(label: uiContext.safeTypeLabel));
     }
 
+    _markerLayerLookupMap = Map.fromIterable(
+        _layers.whereType<GeoMarkerLayer>(),
+        key: (layer) => layer.name,
+        value: (layer) => layer);
+
     _setup(
       initialCenter: initialCenter,
       initialZoom: initialZoom,
@@ -103,6 +108,9 @@ class GeoMapController {
 
   List<GeoLayer> _layers;
   List<GeoLayer> get layers => _layers;
+
+  Map<String, GeoLayer> _markerLayerLookupMap;
+
   String get attribution => _geoMap.features[Features.GEO_ATTRIBUTION];
 
   final mapController = MapController();
@@ -141,9 +149,7 @@ class GeoMapController {
       return null;
     }
 
-    // TODO Convert JSON Map to GeoPosition in a lower layer.
-    var geoPosition =
-        GeoPosition.fromJson(element.features[Features.GEO_POSITION]);
+    var geoPosition = Features.getGeoPosition(element.features);
     if (geoPosition?.latitude == null || geoPosition?.longitude == null) {
       return null;
     }
@@ -219,24 +225,24 @@ class GeoMapController {
         continue;
       }
 
-      var iconData = getIconData(service, element.features[Features.ICON]) ??
-          MdiIcons.marker;
-      var iconColor = string2color(element.features[Features.ICON_COLOR]) ??
-          getPrimaryDarkerColor(uiContext.context);
-      var iconWidth =
-          (element.features[Features.ICON_WIDTH] as num)?.toDouble();
-      var iconHeight =
-          (element.features[Features.ICON_HEIGHT] as num)?.toDouble();
-      var icon = Icon(iconData, color: iconColor, size: iconWidth);
-      var label = element.valueLabel;
-
       var layerName = element.features[Features.GEO_LATER_NAME];
+
+      // Best effort for a default layer icon.
+      var iconInfo = Features.getIcon(element.features) ??
+          Features.getIcon(_markerLayerLookupMap[layerName]?.features);
+
+      var iconData = getIconData(service, iconInfo?.name) ?? MdiIcons.marker;
+      var iconColor = string2color(iconInfo?.color) ??
+          getPrimaryDarkerColor(uiContext.context);
+      var iconSize = iconInfo?.size;
+      var icon = Icon(iconData, color: iconColor, size: iconSize);
+      var label = element.valueLabel;
 
       if (layerVisibility[layerName]) {
         markers.add(
           Marker(
-            width: iconWidth ?? markerWidth,
-            height: iconHeight ?? markerHeight,
+            width: iconSize ?? markerWidth,
+            height: iconSize ?? markerHeight,
             point: LatLng(geoPosition.latitude, geoPosition.longitude),
             builder: (ctx) {
               return SubActionsWidget.forListElement(

@@ -108,7 +108,7 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
 
   @override
   Widget doCreateEditor(TypeEditorContext editorContext) {
-    var geoMap = GeoMap.fromJson(editorContext.features[Features.GEO_MAP]);
+    var geoMap = Features.getGeoMap(editorContext.features);
 
     if (geoMap != null) {
       if (editorContext.rootRecordSingleLeadingField != null &&
