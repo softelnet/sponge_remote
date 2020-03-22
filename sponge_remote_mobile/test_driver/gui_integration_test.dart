@@ -1379,8 +1379,9 @@ void main() {
         var counterValue = await driver.getText(counterFinder);
         var counter = int.parse(counterValue);
 
-        await driver.waitFor(find.text('${counter + 1}'));
+        // Wait for the counter + 2 because the counter + 1 could be skipped.
         await driver.waitFor(find.text('${counter + 2}'));
+        await driver.waitFor(find.text('${counter + 3}'));
 
         await driver.tap(find.text('CLOSE'));
       });
