@@ -111,14 +111,33 @@ class GeoMapController {
 
   Map<String, GeoLayer> _markerLayerLookupMap;
 
-  String get attribution => _geoMap.features[Features.GEO_ATTRIBUTION];
-
   final mapController = MapController();
 
   LatLng center;
   double zoom;
 
   List get data => (uiContext.value as List) ?? [];
+
+  GeoLayer getTopVisibleBasemapLayer() {
+    var result;
+
+    _layers.asMap().forEach((index, layer) {
+      if (layer is GeoTileLayer && visibleLayers[index]) {
+        result = layer;
+      }
+    });
+
+    return result;
+  }
+
+  String get attribution {
+    var topBasemapLayer = getTopVisibleBasemapLayer();
+
+    return (topBasemapLayer?.features != null
+            ? topBasemapLayer?.features[Features.GEO_ATTRIBUTION]
+            : null) ??
+        _geoMap.features[Features.GEO_ATTRIBUTION];
+  }
 
   void _setup({
     @required LatLng initialCenter,
@@ -128,7 +147,10 @@ class GeoMapController {
     visibleLayers = (initialVisibleLayers != null &&
             initialVisibleLayers.length == _layers.length)
         ? initialVisibleLayers
-        : List.filled(_layers.length, true, growable: true);
+        : _layers
+            .map((layer) =>
+                Features.getBool(layer?.features, Features.VISIBLE, () => true))
+            .toList();
 
     this.initialCenter = initialCenter ??
         (_geoMap.center?.latitude != null && _geoMap.center?.longitude != null
@@ -477,7 +499,12 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     return Container(
       alignment: Alignment.bottomLeft,
       child: Padding(
-        padding: const EdgeInsets.only(left: 5, bottom: 2),
+        padding: EdgeInsets.only(
+            left: 5,
+            bottom: 2,
+            // Margin for the location FAB.
+            right: widget.geoMapController.fabSize +
+                widget.geoMapController.fabMargin * 2),
         child: Opacity(
           opacity: 0.75,
           child: Text(
@@ -564,7 +591,7 @@ class _GeoMapContainerState extends State<GeoMapContainer> {
         GeoMapWidget(
           geoMapController: widget.geoMapController,
         ),
-        // TODO Full screen!!!
+        // TODO Full screen map in the acton call page.
         //if (widget.geoMapController.fullScreen)
         Container(
           alignment: Alignment.topRight,
