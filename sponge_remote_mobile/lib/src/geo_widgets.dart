@@ -139,6 +139,8 @@ class GeoMapController {
         _geoMap.features[Features.GEO_ATTRIBUTION];
   }
 
+  Color get backgroundColor => string2color(_geoMap.features[Features.COLOR]);
+
   void _setup({
     @required LatLng initialCenter,
     @required double initialZoom,
@@ -148,8 +150,8 @@ class GeoMapController {
             initialVisibleLayers.length == _layers.length)
         ? initialVisibleLayers
         : _layers
-            .map((layer) =>
-                Features.getBool(layer?.features, Features.VISIBLE, () => true))
+            .map((layer) => Features.getBool(layer?.features, Features.VISIBLE,
+                orElse: () => true))
             .toList();
 
     this.initialCenter = initialCenter ??
@@ -184,7 +186,7 @@ class GeoMapController {
 
     var geoPosition = data
         .where((element) =>
-            layerVisibility[element.features[Features.GEO_LATER_NAME]])
+            layerVisibility[element.features[Features.GEO_LAYER_NAME]])
         .map(getElementGeoPosition)
         .firstWhere((geoPosition) => geoPosition != null, orElse: () => null);
     if (geoPosition?.latitude != null && geoPosition?.longitude != null) {
@@ -208,11 +210,17 @@ class GeoMapController {
       if (visibleLayers[index] &&
           layer is GeoTileLayer &&
           layer.urlTemplate != null) {
-        layerOptions.add(TileLayerOptions(
-          urlTemplate: layer.urlTemplate,
-          additionalOptions: layer.options,
-          subdomains: layer.subdomains ?? [],
-        ));
+        layerOptions.add(
+          TileLayerOptions(
+            urlTemplate: layer.urlTemplate,
+            additionalOptions: layer.options,
+            subdomains: layer.subdomains ?? [],
+            tms: Features.getBool(layer.features, Features.GEO_TMS,
+                orElse: () => false),
+            opacity: Features.getDouble(layer.features, Features.OPACITY,
+                orElse: () => 1.0),
+          ),
+        );
       }
     });
 
@@ -247,7 +255,7 @@ class GeoMapController {
         continue;
       }
 
-      var layerName = element.features[Features.GEO_LATER_NAME];
+      var layerName = element.features[Features.GEO_LAYER_NAME];
 
       // Best effort for a default layer icon.
       var iconInfo = Features.getIcon(element.features) ??
@@ -317,6 +325,22 @@ class GeoMapController {
         ),
       );
 
+  void toggleLayerVisibility(int index) {
+    visibleLayers[index] = !visibleLayers[index];
+
+    // Hide other layers in the same group if the layer has became visible.
+    if (visibleLayers[index]) {
+      var goup = _layers[index]?.features[Features.GROUP];
+      if (goup != null) {
+        layers.asMap().forEach((i, l) {
+          if (i != index && _layers[i]?.features[Features.GROUP] == goup) {
+            visibleLayers[i] = false;
+          }
+        });
+      }
+    }
+  }
+
   Widget buildMenu(BuildContext context, VoidCallback onRefresh,
       {Widget icon}) {
     var layerItems = <CheckedPopupMenuItem<int>>[];
@@ -347,7 +371,7 @@ class GeoMapController {
         } else if (value == 'fullScreen') {
           fullScreen = !fullScreen;
         } else if (value is int) {
-          visibleLayers[value] = !visibleLayers[value];
+          toggleLayerVisibility(value);
         }
 
         if (onRefresh != null) {
@@ -460,16 +484,19 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
 
     return Stack(
       children: [
-        FlutterMap(
-          options: _createMapOptions(),
-          layers: [
-            ...widget.geoMapController.createBaseLayers(),
-            if (!clusterMarkers) MarkerLayerOptions(markers: markers),
-            if (clusterMarkers) _createMarkerClusterLayerOptions(markers),
-            if (widget.geoMapController.enableCurrentLocation)
-              _createUserLocationOptions(markers),
-          ],
-          mapController: widget.geoMapController.mapController,
+        Container(
+          child: FlutterMap(
+            options: _createMapOptions(),
+            layers: [
+              ...widget.geoMapController.createBaseLayers(),
+              if (!clusterMarkers) MarkerLayerOptions(markers: markers),
+              if (clusterMarkers) _createMarkerClusterLayerOptions(markers),
+              if (widget.geoMapController.enableCurrentLocation)
+                _createUserLocationOptions(markers),
+            ],
+            mapController: widget.geoMapController.mapController,
+          ),
+          color: widget.geoMapController.backgroundColor,
         ),
         if (attribution != null) _buildAttributionWidget(attribution),
       ],
@@ -478,21 +505,21 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
 
   MapOptions _createMapOptions() {
     return MapOptions(
-        center: widget.geoMapController.initialCenter,
-        zoom: widget.geoMapController.initialZoom,
-        minZoom: widget.geoMapController.minZoom,
-        maxZoom: widget.geoMapController.maxZoom,
-        // The CRS is currently ignored.
-        plugins: [
-          if (clusterMarkers) MarkerClusterPlugin(),
-          if (widget.geoMapController.enableCurrentLocation)
-            UserLocationPlugin(),
-        ],
-        onPositionChanged: (MapPosition position, bool hasGesture) {
-          // Update the map position in the geo map controller.
-          widget.geoMapController.center = position.center;
-          widget.geoMapController.zoom = position.zoom;
-        });
+      center: widget.geoMapController.initialCenter,
+      zoom: widget.geoMapController.initialZoom,
+      minZoom: widget.geoMapController.minZoom,
+      maxZoom: widget.geoMapController.maxZoom,
+      // The CRS is currently ignored.
+      plugins: [
+        if (clusterMarkers) MarkerClusterPlugin(),
+        if (widget.geoMapController.enableCurrentLocation) UserLocationPlugin(),
+      ],
+      onPositionChanged: (MapPosition position, bool hasGesture) {
+        // Update the map position in the geo map controller.
+        widget.geoMapController.center = position.center;
+        widget.geoMapController.zoom = position.zoom;
+      },
+    );
   }
 
   Widget _buildAttributionWidget(Object attribution) {
