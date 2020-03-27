@@ -246,26 +246,31 @@ void main() {
         await driver.tap(find.text('CANCEL'));
       });
 
-      // TODO This test doesn't work after changing ListView to ScrollablePositionedList.
-      // test('call Action with a pageable list (ActionWithPageableList)',
-      //     () async {
-      //   await openAction('ActionWithPageableList');
+      test('call Action with a pageable list (ActionWithPageableList)',
+          () async {
+        var actionName = 'ActionWithPageableList';
+        var selected = 5;
 
-      //   var listFinder = findByValueKeyAsType('list');
-      //   await driver.waitFor(listFinder);
+        await openAction(actionName);
 
-      //   await driver.waitFor(find.descendant(
-      //       of: find.byValueKey('list-element-5'),
-      //       matching: find.byType('Icon')));
+        await driver.waitFor(find.descendant(
+            of: find.byValueKey('list-element-$selected'),
+            matching: find.byType('Icon')));
 
-      //   for (int i = 0; i < 25; i++) {
-      //     var elementFinder = find.text('Element $i');
-      //     await driver.scrollUntilVisible(listFinder, elementFinder,
-      //         dyScroll: -20);
-      //   }
+        // TODO Scroll to the last element.
+        // var pageableListFinder = find.descendant(
+        //     of: find.byType('ListBody'),
+        //     matching: find.byType(
+        //         'ListView')); //find.byValueKey('$TEST_SERVICE-$actionName-args-list-standard'));
+        // for (int i = selected + 1; i < 25; i++) {
+        //   print(i);
+        //   await driver.scrollUntilVisible(
+        //       pageableListFinder, find.byValueKey('list-element-$i'),
+        //       dyScroll: -20);
+        // }
 
-      //   await driver.tap(find.pageBack());
-      // });
+        await driver.tap(find.pageBack());
+      });
 
       test(
           'call Action with a provided, dynamic argument (DynamicProvidedArgAction)',
@@ -663,7 +668,8 @@ void main() {
 
       //   await driver.tap(find.text('OK'));
       //   // TODO Hangs.
-      // //await waitForResult('Result', 'Success', timeout: Duration(seconds: 120));
+      //   await waitForResult('Result', 'Success',
+      //       timeout: Duration(seconds: 120));
       // });
 
       test('call Enable args action (EnableArgsAction)', () async {
