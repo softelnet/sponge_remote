@@ -25,8 +25,8 @@ dependencies:
     path: ../sponge_remote
 
 # TODO Remove after sponge_flutter_client is ready.
-  sponge_client_dart: ^1.14.0+1
-  sponge_grpc_client_dart: ^1.14.0
+  sponge_client_dart: ^1.15.0
+  sponge_grpc_client_dart: ^1.15.0
 dependency_overrides:
   # Use the local library if possible.
   sponge_client_dart:
