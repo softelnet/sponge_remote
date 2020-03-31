@@ -111,10 +111,13 @@ class GeoMapController {
 
   Map<String, GeoLayer> _markerLayerLookupMap;
 
-  final mapController = MapController();
-
   LatLng center;
   double zoom;
+
+  MapController _mapController;
+
+  void bindMapController(MapController mapController) =>
+      _mapController = mapController;
 
   List get data => (uiContext.value as List) ?? [];
 
@@ -199,7 +202,7 @@ class GeoMapController {
   void moveToData() {
     var dataPosition = _findDataPosition();
     if (dataPosition != null) {
-      mapController.move(dataPosition, mapController.zoom);
+      _mapController.move(dataPosition, zoom);
     }
   }
 
@@ -308,7 +311,7 @@ class GeoMapController {
       initialVisibleLayers: null,
     );
 
-    mapController.move(initialCenter, initialZoom);
+    _mapController.move(initialCenter, initialZoom);
   }
 
   Widget buildMenuIcon(BuildContext context) => Opacity(
@@ -410,7 +413,7 @@ class GeoMapController {
           value: 'enableCurrentLocation',
           child: IconTextPopupMenuItemWidget(
             icon: MdiIcons.crosshairsGps,
-            text: 'Show current location',
+            text: 'Show current location (experimental)',
             isOn: enableCurrentLocation,
           ),
         ),
@@ -471,9 +474,15 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
 
   bool get clusterMarkers => widget.geoMapController.enableClusterMarkers;
 
+  /// The map controller must be associated with the widget state.
+  final _mapController = MapController();
+
   @override
   Widget build(BuildContext context) {
     var service = ApplicationProvider.of(context).service;
+
+    // Bind the map controller associated with the state for each GeoMapController instance.
+    widget.geoMapController.bindMapController(_mapController);
 
     _subActionsController =
         SubActionsController.forList(uiContext, service.spongeService);
@@ -494,7 +503,7 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
               if (widget.geoMapController.enableCurrentLocation)
                 _createUserLocationOptions(markers),
             ],
-            mapController: widget.geoMapController.mapController,
+            mapController: _mapController,
           ),
           color: widget.geoMapController.backgroundColor,
         ),
@@ -573,7 +582,7 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
   UserLocationOptions _createUserLocationOptions(List<Marker> markers) {
     return UserLocationOptions(
       context: context,
-      mapController: widget.geoMapController.mapController,
+      mapController: _mapController,
       markers: markers,
       zoomToCurrentLocationOnLoad: false,
       updateMapLocationOnPositionChange:
