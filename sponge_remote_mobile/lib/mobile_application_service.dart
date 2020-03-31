@@ -18,15 +18,15 @@ import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote_mobile/mobile_compatibility.dart';
 
-class MobileApplicationService
-    extends FlutterApplicationService<MobileSpongeService, FlutterApplicationSettings> {
+class MobileApplicationService extends FlutterApplicationService<
+    MobileSpongeService, FlutterApplicationSettings> {
   MobileApplicationService() {
     typeGuiProvider = MobileDefaultTypeGuiProvider();
   }
 
   static final Logger _logger = Logger('MobileApplicationService');
   FlutterLocalNotificationsPlugin _localNotificationsPlugin;
-  final int _eventNotificationId = 0;
+  final int _eventNotificationId = 1;
 
   @override
   Future<void> init() async {
@@ -94,18 +94,27 @@ class MobileApplicationService
 
   @override
   Future<void> clearEventNotifications() async {
-    await _localNotificationsPlugin.cancel(_eventNotificationId);
+    // TODO cancel(_eventNotificationId) causes application crashes in a release mode (on Samsung Galaxy S7).
+    await _localNotificationsPlugin.cancelAll();
   }
 
   @override
   Future<MobileSpongeService> createSpongeService(
-          SpongeConnection connection, TypeConverter typeConverter, FeatureConverter featureConverter,) async =>
-      MobileSpongeService(connection, typeConverter, featureConverter, typeGuiProvider,);
+    SpongeConnection connection,
+    TypeConverter typeConverter,
+    FeatureConverter featureConverter,
+  ) async =>
+      MobileSpongeService(
+        connection,
+        typeConverter,
+        featureConverter,
+        typeGuiProvider,
+      );
 }
 
 class MobileSpongeService extends FlutterSpongeService {
-  MobileSpongeService(SpongeConnection connection, TypeConverter typeConverter, FeatureConverter featureConverter,
-      TypeGuiProvider typeGuiProvider)
+  MobileSpongeService(SpongeConnection connection, TypeConverter typeConverter,
+      FeatureConverter featureConverter, TypeGuiProvider typeGuiProvider)
       : super(connection, typeConverter, featureConverter, typeGuiProvider);
 
   // @override
