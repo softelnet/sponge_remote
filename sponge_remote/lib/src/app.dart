@@ -46,6 +46,11 @@ class SpongeRemoteApp extends StatelessWidget {
                               ? Brightness.dark
                               : Brightness.light,
                           primarySwatch: Colors.teal,
+                          floatingActionButtonTheme:
+                              FloatingActionButtonThemeData(
+                            backgroundColor:
+                                getFloatingButtonBackgroudColor(context),
+                          ),
                         ),
                         initialRoute: DefaultRoutes.ACTIONS,
                         routes: widgetsFactory.createRoutes(),

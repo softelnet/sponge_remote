@@ -321,7 +321,6 @@ class GeoMapController {
             heroTag: 'fabMenu',
             onPressed: null,
             child: Icon(getPopupMenuIconData(context)),
-            backgroundColor: getFloatingButtonBackgroudColor(context),
           ),
           width: fabSize,
           height: fabSize,
@@ -602,7 +601,6 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
         heroTag: 'fabMoveToCurrentLocation',
         onPressed: null,
         child: Icon(Icons.my_location),
-        backgroundColor: getFloatingButtonBackgroudColor(context),
       ));
 }
 
