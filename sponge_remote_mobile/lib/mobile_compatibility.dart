@@ -24,8 +24,9 @@ import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote_mobile/src/geo_widgets.dart';
 
-class MobileDefaultTypeGuiProvider extends DefaultTypeGuiProvider {
-  MobileDefaultTypeGuiProvider() {
+class MobileDefaultTypeGuiProviderRegistry
+    extends DefaultTypeGuiProviderRegistry {
+  MobileDefaultTypeGuiProviderRegistry() {
     registerAll({
       DataTypeKind.BINARY: (type) => MobileBinaryTypeGuiProvider(type),
       DataTypeKind.LIST: (type) => MobileListTypeGuiProvider(type),
@@ -37,7 +38,7 @@ class MobileBinaryTypeGuiProvider extends BinaryTypeGuiProvider {
   MobileBinaryTypeGuiProvider(DataType type) : super(type);
 
   @override
-  Widget doCreateExtendedViewer(TypeViewerContext viewerContext) {
+  Widget createExtendedViewer(TypeViewerContext viewerContext) {
     if (viewerContext.value == null) {
       return null;
     }
@@ -99,6 +100,7 @@ class MobileBinaryTypeGuiProvider extends BinaryTypeGuiProvider {
   }
 }
 
+/// Supports geo maps.
 class MobileListTypeGuiProvider extends ListTypeGuiProvider {
   MobileListTypeGuiProvider(DataType type) : super(type);
 
@@ -107,46 +109,43 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
   static const ADDITIONAL_DATA_KEY_VISIBLE_LAYERS = 'map.visibleLayers';
 
   @override
-  Widget doCreateEditor(TypeEditorContext editorContext) {
+  Widget createEditor(TypeEditorContext editorContext) {
     var geoMap = Features.getGeoMap(editorContext.features);
 
-    if (geoMap != null) {
-      if (editorContext.rootRecordSingleLeadingField != null &&
-          editorContext.rootRecordSingleLeadingField ==
-              editorContext.qualifiedType.path) {
-        return GeoMapContainer(
-          geoMapController:
-              _createGeoMapController(geoMap, editorContext, false),
-        );
-      } else {
-        var label = editorContext.getDecorationLabel();
+    if (geoMap == null) {
+      return null;
+    }
 
-        return FlatButton.icon(
-          key: Key('open-map'),
-          color: Theme.of(editorContext.context).primaryColor,
-          textColor: Colors.white,
-          label: Text(label?.toUpperCase() ?? 'MAP'),
-          icon: Icon(
-            Icons.map,
-            color: getIconColor(editorContext.context),
-          ),
-          onPressed: () async {
-            await Navigator.push(
-              editorContext.context,
-              createPageRoute(
-                editorContext.context,
-                builder: (context) => GeoMapPage(
-                  title: label ?? 'Map',
-                  geoMapController:
-                      _createGeoMapController(geoMap, editorContext, true),
-                ),
-              ),
-            );
-          },
-        );
-      }
+    if (editorContext.isThisRootRecordSingleLeadingField) {
+      return GeoMapContainer(
+        geoMapController: _createGeoMapController(geoMap, editorContext, false),
+      );
     } else {
-      return super.doCreateEditor(editorContext);
+      var label = editorContext.getDecorationLabel();
+
+      return FlatButton.icon(
+        key: Key('open-map'),
+        color: Theme.of(editorContext.context).primaryColor,
+        textColor: Colors.white,
+        label: Text(label?.toUpperCase() ?? 'MAP'),
+        icon: Icon(
+          Icons.map,
+          color: getIconColor(editorContext.context),
+        ),
+        onPressed: () async {
+          await Navigator.push(
+            editorContext.context,
+            createPageRoute(
+              editorContext.context,
+              builder: (context) => GeoMapPage(
+                title: label ?? 'Map',
+                geoMapController:
+                    _createGeoMapController(geoMap, editorContext, true),
+              ),
+            ),
+          );
+        },
+      );
     }
   }
 

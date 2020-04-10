@@ -24,13 +24,13 @@ class WebApplicationService extends FlutterApplicationService<WebSpongeService,
           TypeConverter typeConverter,
           FeatureConverter featureConverter) async =>
       WebSpongeService(
-          connection, typeConverter, featureConverter, typeGuiProvider);
+          connection, typeConverter, featureConverter, typeGuiProviderRegistry);
 }
 
 class WebSpongeService extends FlutterSpongeService {
   WebSpongeService(SpongeConnection connection, TypeConverter typeConverter,
-      FeatureConverter featureConverter, TypeGuiProvider typeGuiProvider)
-      : super(connection, typeConverter, featureConverter, typeGuiProvider);
+      FeatureConverter featureConverter, TypeGuiProviderRegistry typeGuiProviderRegistry)
+      : super(connection, typeConverter, featureConverter, typeGuiProviderRegistry);
 
   @override
   SpongeGrpcClient createSpongeGrpcClient(

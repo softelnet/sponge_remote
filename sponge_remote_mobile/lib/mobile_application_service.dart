@@ -21,7 +21,7 @@ import 'package:sponge_remote_mobile/mobile_compatibility.dart';
 class MobileApplicationService extends FlutterApplicationService<
     MobileSpongeService, FlutterApplicationSettings> {
   MobileApplicationService() {
-    typeGuiProvider = MobileDefaultTypeGuiProvider();
+    typeGuiProviderRegistry = MobileDefaultTypeGuiProviderRegistry();
   }
 
   static final Logger _logger = Logger('MobileApplicationService');
@@ -108,14 +108,14 @@ class MobileApplicationService extends FlutterApplicationService<
         connection,
         typeConverter,
         featureConverter,
-        typeGuiProvider,
+        typeGuiProviderRegistry,
       );
 }
 
 class MobileSpongeService extends FlutterSpongeService {
   MobileSpongeService(SpongeConnection connection, TypeConverter typeConverter,
-      FeatureConverter featureConverter, TypeGuiProvider typeGuiProvider)
-      : super(connection, typeConverter, featureConverter, typeGuiProvider);
+      FeatureConverter featureConverter, TypeGuiProviderRegistry typeGuiProviderRegistry)
+      : super(connection, typeConverter, featureConverter, typeGuiProviderRegistry);
 
   // @override
   // SpongeGrpcClient createSpongeGrpcClient(
