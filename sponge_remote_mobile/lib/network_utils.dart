@@ -22,7 +22,7 @@ Future<void> findAndAddServices(
     connectionsPresenter.refresh(() => connectionsPresenter.busy = true);
 
     var timeout = Duration(
-        seconds: (connectionsPresenter.service as FlutterApplicationService)
+        seconds: FlutterApplicationService.of(connectionsPresenter.service)
             .settings
             .serviceDiscoveryTimeout);
 
