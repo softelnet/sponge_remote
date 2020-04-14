@@ -17,9 +17,9 @@ import 'package:flutter_driver/flutter_driver.dart';
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:test/test.dart';
 
-/// This integration test requires sponge-examples-project-demo-service/DemoServiceMain
-/// running on a host (10.0.2.2, see https://developer.android.com/studio/run/emulator-networking)
-/// and running in an Android emulator on that host.
+/// This integration tests require sponge-examples-project-demo-service/DemoServiceMain
+/// running on a host (10.0.2.2, see https://developer.android.com/studio/run/emulator-networking).
+/// The tests should be run in an Android emulator on that host.
 void main() {
   const String testHost = '10.0.2.2';
   const String TEST_SERVICE = 'Test service';

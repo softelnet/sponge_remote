@@ -1,6 +1,6 @@
 name: sponge_remote
 description: A Sponge Remote base library.
-version: 0.1.0
+version: 0.15.0
 homepage: https://github.com/softelnet/sponge_remote/sponge_remote
 
 environment:
@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # TODO Specify a version number with overwrite.
+  # TODO Specify the version number with overwrite.
   sponge_flutter_api:
     path: ../../sponge_flutter_api
 

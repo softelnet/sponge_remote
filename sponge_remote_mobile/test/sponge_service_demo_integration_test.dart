@@ -20,10 +20,8 @@ import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote_mobile/logger_configuration.dart';
 import 'package:test/test.dart';
 
-/// This integration test requires sponge-examples-project-demo-service running on the localhost.
+/// This integration tests require sponge-examples-project-demo-service running on the localhost.
 void main() {
-  //static final Logger _logger = Logger('Integration test');
-
   configLogger();
 
   var connection = SpongeConnection(
@@ -34,65 +32,90 @@ void main() {
 
   var actionName = 'DigitsPredict';
 
-  group('SpongeService demo integration', () {
+  Future<SpongeService> _createSpongeService() async {
     var service = SpongeService(connection);
+    await service.open();
+
+    return service;
+  }
+
+  Future<void> run(Future<void> Function(SpongeService service) onRun) async {
+    var service = await _createSpongeService();
+    try {
+      await onRun?.call(service);
+    } finally {
+      await service.close();
+    }
+  }
+
+  group('SpongeService demo integration', () {
     test('version', () async {
-      expect(await service.getVersion(), isNotNull);
+      await run((service) async {
+        expect(await service.getVersion(), isNotNull);
+      });
     });
     test('getActions', () async {
-      List<ActionData> actions = await service.getActions();
-      expect(actions, isNotEmpty);
+      await run((service) async {
+        expect(await service.getActions(), isNotEmpty);
+      });
     });
 
     test('getAction metadata', () async {
-      ActionData actionData = await service.getAction(actionName);
-      expect(actionData.actionMeta.name, equals(actionName));
-      expect(actionData.actionMeta.args.length, equals(1));
-      expect(actionData.actionMeta.args[0] is BinaryType, isTrue);
-      expect(actionData.actionMeta.result is IntegerType, isTrue);
+      await run((service) async {
+        ActionData actionData = await service.getAction(actionName);
+        expect(actionData.actionMeta.name, equals(actionName));
+        expect(actionData.actionMeta.args.length, equals(1));
+        expect(actionData.actionMeta.args[0] is BinaryType, isTrue);
+        expect(actionData.actionMeta.result is IntegerType, isTrue);
+      });
     });
 
     test('action call', () async {
-      ActionData actionData = await service.getAction(actionName);
-      var response = await service.callAction(actionData.actionMeta, args: [
-        Uint8List.fromList(await File('test/resources/5_0.png').readAsBytes())
-      ]);
+      await run((service) async {
+        ActionData actionData = await service.getAction(actionName);
+        var response = await service.callAction(actionData.actionMeta, args: [
+          Uint8List.fromList(await File('test/resources/5_0.png').readAsBytes())
+        ]);
 
-      expect(response.result, equals(5));
+        expect(response.result, equals(5));
+      });
     });
 
     test('test connection', () async {
-      expect(await service.getVersion(),
-          equals(await SpongeService.testConnection(connection)));
+      await run((service) async {
+        expect(await service.getVersion(),
+            equals(await SpongeService.testConnection(connection)));
+      });
     });
-
-    service.close();
   });
 
   group('SpongeService state', () {
-    var service = SpongeService(connection);
-    test('properties', () {
-      expect(service.connection.isSame(connection), isTrue);
-      expect(service.connected, isTrue);
+    test('properties', () async {
+      await run((service) async {
+        expect(service.connection.isSame(connection), isTrue);
+        expect(service.connected, isTrue);
+      });
     });
 
     test('getCachedAction', () async {
-      expect(service.getCachedAction(actionName, required: false), isNull);
-      await service.getAction(actionName);
+      await run((service) async {
+        expect(service.getCachedAction(actionName, required: false), isNull);
+        await service.getAction(actionName);
 
-      var actionData = service.getCachedAction(actionName, required: false);
-      expect(actionData, isNotNull);
-      expect(actionData.actionMeta.name, equals(actionName));
+        var actionData = service.getCachedAction(actionName, required: false);
+        expect(actionData, isNotNull);
+        expect(actionData.actionMeta.name, equals(actionName));
+      });
     });
 
     test('clearActions', () async {
-      await service.getActions();
-      expect(service.getCachedAction(actionName, required: false), isNotNull);
+      await run((service) async {
+        await service.getActions();
+        expect(service.getCachedAction(actionName, required: false), isNotNull);
 
-      await service.clearActions();
-      expect(service.getCachedAction(actionName, required: false), isNull);
+        await service.clearActions();
+        expect(service.getCachedAction(actionName, required: false), isNull);
+      });
     });
-
-    service.close();
   });
 }

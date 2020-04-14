@@ -14,8 +14,11 @@
 
 import 'package:test/test.dart';
 
-import 'sponge_service_demo_integration_test.dart' as sponge_service_demo_integration;
+import 'sponge_service_demo_integration_test.dart'
+    as sponge_service_demo_integration_test;
 
 void main() async {
-  group('sponge_service_demo_integration', sponge_service_demo_integration.main);
+  group('All', () {
+    group('Integration', sponge_service_demo_integration_test.main);
+  });
 }

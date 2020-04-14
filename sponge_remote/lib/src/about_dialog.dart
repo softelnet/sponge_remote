@@ -35,14 +35,17 @@ Future<void> showAboutAppDialog(BuildContext context) async {
           TextSpan(
             style: headerTextStyle,
             text:
-                '\n\n$APPLICATION_NAME is a generic GUI client to Sponge REST API services. '
-                'It allows users to call remote Sponge actions.',
+                '\n\n$APPLICATION_NAME is a generic GUI client to Sponge services that allows users to call remote Sponge actions. '
+                'It is released under the open-source Apache 2.0 license.',
           ),
+          TextSpan(
+              style: noteTextStyle,
+              text:
+                  '\n\nThe current version is in alpha phase and supports only a limited set of Sponge features.'),
           TextSpan(
               style: aboutTextStyle,
               text:
-                  '\n\nSponge is an open-source action and event processing system. '
-                  'The supported Sponge server versions are ${ApplicationConstants.SUPPORTED_SPONGE_VERSION_MAJOR_MINOR}.x.'),
+                  '\n\nThe supported Sponge server versions are ${ApplicationConstants.SUPPORTED_SPONGE_VERSION_MAJOR_MINOR}.*.'),
           TextSpan(
             style: aboutTextStyle,
             text: '\n\nFor more information please visit the ',
@@ -63,23 +66,8 @@ Future<void> showAboutAppDialog(BuildContext context) async {
           ),
           TextSpan(
             style: aboutTextStyle,
-            text:
-                ' project home page.\n\nTo see the source code of this app, please visit the $APPLICATION_NAME ',
+            text: ' project home page.',
           ),
-          LinkTextSpan(
-            style: linkStyle,
-            url: 'https://github.com/softelnet/sponge_remote',
-            text: 'GitHub repo',
-          ),
-          TextSpan(
-            style: aboutTextStyle,
-            text: '.',
-          ),
-          TextSpan(
-              style: noteTextStyle,
-              text:
-                  '\n\nThe current version is in alpha phase and supports only a limited set of data types and type features.'
-                  ''),
         ],
       ),
     ),

@@ -730,7 +730,7 @@ packages:
       path: "../../sponge_flutter_api"
       relative: true
     source: path
-    version: "0.1.0"
+    version: "0.15.0"
   sponge_grpc_client_dart:
     dependency: "direct main"
     description:
@@ -744,7 +744,7 @@ packages:
       path: "../sponge_remote"
       relative: true
     source: path
-    version: "0.1.0"
+    version: "0.15.0"
   sqflite:
     dependency: transitive
     description:
