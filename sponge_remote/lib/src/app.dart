@@ -81,7 +81,7 @@ class SpongeRemoteApp extends StatelessWidget {
           return _buildUninitializedApp(
             child: Center(
               child: NotificationPanelWidget(
-                message: snapshot.error,
+                notification: snapshot.error,
                 type: NotificationPanelType.error,
               ),
             ),
