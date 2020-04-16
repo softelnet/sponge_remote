@@ -21,11 +21,11 @@ import 'package:sponge_remote/src/application_constants.dart';
 class SpongeRemoteApp extends StatelessWidget {
   SpongeRemoteApp({
     @required this.service,
-    @required this.widgetsFactory,
+    @required this.guiFactory,
   });
 
   final FlutterApplicationService service;
-  final SpongeWidgetsFactory widgetsFactory;
+  final SpongeGuiFactory guiFactory;
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +44,8 @@ class SpongeRemoteApp extends StatelessWidget {
 
           return ApplicationProvider(
             service: service,
-            child: Provider<SpongeWidgetsFactory>(
-              create: (_) => widgetsFactory,
+            child: Provider<SpongeGuiFactory>(
+              create: (_) => guiFactory,
               child: Builder(
                 builder: (BuildContext context) {
                   service.bindMainBuildContext(context);
@@ -67,7 +67,7 @@ class SpongeRemoteApp extends StatelessWidget {
                           ),
                         ),
                         initialRoute: DefaultRoutes.ACTIONS,
-                        routes: widgetsFactory.createRoutes(),
+                        routes: guiFactory.createRoutes(),
                         //onGenerateRoute: router.generator,
                         debugShowCheckedModeBanner: false,
                       );

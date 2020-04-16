@@ -32,7 +32,7 @@ void main() async {
 
     runApp(SpongeRemoteApp(
       service: service,
-      widgetsFactory: SpongeWidgetsFactory(
+      guiFactory: SpongeGuiFactory(
         onCreateDrawer: (_) => AppDrawer(),
         onCreateRoutes: () => {
           DefaultRoutes.ACTIONS: (context) => ActionsPage(),

@@ -24,7 +24,7 @@ void main() async {
   
   runApp(SpongeRemoteApp(
     service: MobileApplicationService(),
-    widgetsFactory: SpongeWidgetsFactory(
+    guiFactory: SpongeGuiFactory(
       onCreateDrawer: (_) => AppDrawer(),
       onCreateConnectionsPageMenuItems: (_) => [
         ConnectionsPageMenuItemConfiguration(
