@@ -84,7 +84,7 @@ void main() {
     test('test connection', () async {
       await run((service) async {
         expect(await service.getVersion(),
-            equals(await SpongeService.testConnection(connection)));
+            equals(await SpongeService.verifyConnection(connection)));
       });
     });
   });
