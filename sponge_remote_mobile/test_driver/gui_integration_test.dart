@@ -22,7 +22,7 @@ import 'package:test/test.dart';
 /// The tests should be run in an Android emulator on that host.
 void main() {
   const String testHost = '10.0.2.2';
-  const String TEST_SERVICE = 'Test service';
+  const String TEST_SERVICE = 'My Sponge service';
 
   var startDelay = Duration(seconds: 2);
 
