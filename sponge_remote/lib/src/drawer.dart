@@ -49,17 +49,12 @@ class AppDrawer extends StatelessWidget {
             onTap: () async =>
                 showDistinctScreen(context, DefaultRoutes.ACTIONS),
           ),
-          FutureBuilder<bool>(
-            future: service.spongeService?.isGrpcEnabled(),
-            builder: (context, snapshot) {
-              return ListTile(
-                leading: Icon(Icons.event, color: iconColor),
-                title: Text('Events'),
-                enabled: snapshot.hasData && snapshot.data,
-                onTap: () async =>
-                    showDistinctScreen(context, DefaultRoutes.EVENTS),
-              );
-            },
+          ListTile(
+            leading: Icon(Icons.event, color: iconColor),
+            title: Text('Events'),
+            enabled: service.spongeService?.isGrpcEnabled ?? false,
+            onTap: () async =>
+                showDistinctScreen(context, DefaultRoutes.EVENTS),
           ),
           Divider(),
           ListTile(
