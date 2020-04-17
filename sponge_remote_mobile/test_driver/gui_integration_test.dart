@@ -174,7 +174,7 @@ void main() {
       test('create test connection', () async {
         await Future.delayed(startDelay);
 
-        var activate = find.text('Please activate a Sponge connection');
+        var activate = find.byValueKey('tapToActivateConnection');
         await driver.waitFor(activate);
         await driver.tap(activate);
 
