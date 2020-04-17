@@ -26,7 +26,7 @@ class AppDrawer extends StatelessWidget {
 
     var connectionName = service.spongeService?.connection?.name;
 
-    final iconColor = getSecondaryColor(context);
+    final iconColor = getPrimaryColor(context);
 
     return Drawer(
       child: ListView(
