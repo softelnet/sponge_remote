@@ -19,12 +19,12 @@ import 'package:sponge_remote/src/application_constants.dart';
 Future<void> showAboutAppDialog(BuildContext context) async {
   final ThemeData themeData = Theme.of(context);
   final TextStyle headerTextStyle =
-      themeData.textTheme.bodyText1.apply(fontWeightDelta: 2);
-  final TextStyle aboutTextStyle = themeData.textTheme.bodyText1;
+      themeData.textTheme.body1.apply(fontWeightDelta: 2);
+  final TextStyle aboutTextStyle = themeData.textTheme.body1;
   final TextStyle linkStyle =
-      themeData.textTheme.bodyText1.copyWith(color: themeData.accentColor);
+      themeData.textTheme.body1.copyWith(color: themeData.accentColor);
   final TextStyle noteTextStyle =
-      themeData.textTheme.bodyText1.apply(color: getSecondaryColor(context));
+      themeData.textTheme.body1.apply(color: getSecondaryColor(context));
 
   await showDefaultAboutAppDialog(
     context,
