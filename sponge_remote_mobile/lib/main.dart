@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote/sponge_remote.dart';
@@ -21,7 +22,7 @@ import 'package:sponge_remote_mobile/network_utils.dart';
 
 void main() async {
   configLogger();
-  
+
   runApp(SpongeRemoteApp(
     service: MobileApplicationService(),
     guiFactory: SpongeGuiFactory(
@@ -50,6 +51,10 @@ void main() async {
             ),
         DefaultRoutes.SETTINGS: (context) => SettingsPage(),
       },
+      onCreateNetworkImage: (String src) => CachedNetworkImage(
+        imageUrl: src,
+        errorWidget: (context, url, error) => Icon(Icons.error),
+      ),
     ),
   ));
 }
