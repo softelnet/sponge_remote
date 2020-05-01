@@ -778,11 +778,11 @@ void main() {
         await driver.waitFor(find.descendant(
             of: findListElement('fruits', 2), matching: find.text('Apple')));
 
-        // The 'Choose a fruit' context action.
+        // The 'Choose a new fruit' context action.
         await driver.tap(find.descendant(
             of: findListElement('fruits', 0),
             matching: find.byType('SubActionsWidget')));
-        await driver.tap(find.text('Choose a fruit'));
+        await driver.tap(find.text('Choose a new fruit'));
         await driver.tap(find.descendant(
             of: await findArg('fruits'), matching: find.text('Banana')));
         await driver.tap(find.text('CHOOSE'));
