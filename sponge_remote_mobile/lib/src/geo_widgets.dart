@@ -281,6 +281,7 @@ class GeoMapController {
               return SubActionsWidget.forListElement(
                 uiContext,
                 service.spongeService,
+                key: Key('map-element-$i'),
                 controller: subActionsController,
                 element: element,
                 index: i,

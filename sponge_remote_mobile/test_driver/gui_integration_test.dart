@@ -246,6 +246,22 @@ void main() {
         await driver.tap(find.text('CANCEL'));
       });
 
+      test('call Action with a geo map (ActionWithGeoMap)', () async {
+        await openAction('ActionWithGeoMap');
+
+        await driver.waitFor(find.byType('FlutterMap'));
+
+        await driver.tap(find.byValueKey('map-menu'));
+        await driver.tap(find.text('Cluster data markers'));
+
+        await driver.tap(find.byValueKey('map-element-0'));
+        await driver.tap(find.text('View the location'));
+
+        await driver.tap(find.text('CLOSE'));
+
+        await driver.tap(find.pageBack());
+      });
+
       test('call Action with a pageable list (ActionWithPageableList)',
           () async {
         var actionName = 'ActionWithPageableList';
