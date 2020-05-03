@@ -810,6 +810,24 @@ void main() {
         await driver.waitFor(find.descendant(
             of: findListElement('fruits', 2), matching: find.text('Apple')));
 
+        // The 'Get list index' context action.
+        var index = 1;
+        await driver.tap(find.descendant(
+            of: findListElement('fruits', index),
+            matching: find.byType('SubActionsWidget')));
+        await driver.tap(find.text('Get list index'));
+        await driver.waitFor(find.text('Index: $index'));
+        await driver.tap(find.text('CLOSE'));
+
+        // The 'Update a whole list' context action.
+        await driver.tap(find.descendant(
+            of: findListElement('fruits', index),
+            matching: find.byType('SubActionsWidget')));
+        await driver.tap(find.text('Update a whole list'));
+        await driver.waitFor(find.descendant(
+            of: findListElement('fruits', 3),
+            matching: find.text('Strawberry')));
+
         await driver.tap(find.pageBack());
       });
 // TODO Hangs.
