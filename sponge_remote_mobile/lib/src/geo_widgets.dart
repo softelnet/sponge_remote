@@ -483,32 +483,41 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     // Bind the map controller associated with the state for each GeoMapController instance.
     widget.geoMapController.bindMapController(_mapController);
 
-    _subActionsController =
-        SubActionsController.forList(uiContext, service.spongeService);
+    try {
+      _subActionsController =
+          SubActionsController.forList(uiContext, service.spongeService);
 
-    var markers =
-        widget.geoMapController.createMarkers(service, _subActionsController);
-    var attribution = widget.geoMapController.attribution;
+      var markers =
+          widget.geoMapController.createMarkers(service, _subActionsController);
+      var attribution = widget.geoMapController.attribution;
 
-    return Stack(
-      children: [
-        Container(
-          child: FlutterMap(
-            options: _createMapOptions(),
-            layers: [
-              ...widget.geoMapController.createBaseLayers(),
-              if (!clusterMarkers) MarkerLayerOptions(markers: markers),
-              if (clusterMarkers) _createMarkerClusterLayerOptions(markers),
-              if (widget.geoMapController.enableCurrentLocation)
-                _createUserLocationOptions(markers),
-            ],
-            mapController: _mapController,
+      return Stack(
+        children: [
+          Container(
+            child: FlutterMap(
+              options: _createMapOptions(),
+              layers: [
+                ...widget.geoMapController.createBaseLayers(),
+                if (!clusterMarkers) MarkerLayerOptions(markers: markers),
+                if (clusterMarkers) _createMarkerClusterLayerOptions(markers),
+                if (widget.geoMapController.enableCurrentLocation)
+                  _createUserLocationOptions(markers),
+              ],
+              mapController: _mapController,
+            ),
+            color: widget.geoMapController.backgroundColor,
           ),
-          color: widget.geoMapController.backgroundColor,
+          if (attribution != null) _buildAttributionWidget(attribution),
+        ],
+      );
+    } catch (e) {
+      return Center(
+        child: NotificationPanelWidget(
+          notification: e,
+          type: NotificationPanelType.error,
         ),
-        if (attribution != null) _buildAttributionWidget(attribution),
-      ],
-    );
+      );
+    }
   }
 
   MapOptions _createMapOptions() {
