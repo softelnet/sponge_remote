@@ -47,14 +47,18 @@ Future<void> findAndAddServices(
           counter++;
         }
 
-        await connectionsPresenter.addConnections([
-          SpongeConnection(
-            name: discoveredService.name,
-            url: discoveredService.url,
-            anonymous: true,
-            network: discoveredService.network,
-          )
-        ]);
+        if (connectionsPresenter.isBound) {
+          await connectionsPresenter.addConnections([
+            SpongeConnection(
+              name: discoveredService.name,
+              url: discoveredService.url,
+              anonymous: true,
+              network: discoveredService.network,
+            )
+          ]);
+
+          connectionsPresenter.refresh();
+        }
       }
     }
   } finally {
