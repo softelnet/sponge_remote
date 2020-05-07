@@ -200,8 +200,6 @@ void main() {
         await driver.waitFor(testService);
 
         await driver.tap(testService);
-
-        await driver.tap(find.pageBack());
       });
     });
 
