@@ -182,7 +182,6 @@ void main() {
 
         await driver.tap(find.byValueKey('name'));
         await driver.enterText(TEST_SERVICE);
-        //await driver.waitFor(find.text(TEST_SERVICE));
 
         await driver.tap(find.byValueKey('address'));
         await driver.enterText('http://$testHost:8888');
