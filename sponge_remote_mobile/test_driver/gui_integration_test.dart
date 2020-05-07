@@ -195,11 +195,7 @@ void main() {
 
         await driver.tap(find.text('OK'));
 
-        var testService = find.text(TEST_SERVICE);
-
-        await driver.waitFor(testService);
-
-        await driver.tap(testService);
+        await driver.tap(find.text(TEST_SERVICE));
       });
     });
 
