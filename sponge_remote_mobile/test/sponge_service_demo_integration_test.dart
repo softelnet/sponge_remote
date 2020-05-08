@@ -20,7 +20,7 @@ import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote_mobile/logger_configuration.dart';
 import 'package:test/test.dart';
 
-/// This integration tests require sponge-examples-project-demo-service running on the localhost.
+/// This integration tests require sponge-app-demo-service running on the localhost.
 void main() {
   configLogger();
 

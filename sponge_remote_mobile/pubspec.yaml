@@ -16,18 +16,18 @@ dependencies:
   path_provider: ^1.6.7
   flutter_local_notifications: ^1.4.3
   multicast_dns: ^0.2.2
-  connectivity: ^0.4.8+2
+  connectivity: ^0.4.8+5
   flutter_map: ^0.8.2
   user_location: ^0.1.3
   flutter_map_marker_cluster: ^0.2.7
   badges: ^1.1.1
-  cached_network_image: ^2.2.0
+  cached_network_image: ^2.2.0+1
 
-  scrollable_positioned_list: ^0.1.3
+  scrollable_positioned_list: ^0.1.5
 
   logging: ^0.11.4
 
-  material_design_icons_flutter: ^4.0.5045
+  material_design_icons_flutter: ^4.0.5145
 
   sponge_flutter_api: ^0.16.0
 
