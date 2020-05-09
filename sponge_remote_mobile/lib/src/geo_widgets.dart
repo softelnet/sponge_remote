@@ -22,7 +22,7 @@ import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:user_location/user_location.dart';
 
-typedef void OnMapCloseCallback(GeoMapController geoMapController);
+typedef OnMapCloseCallback = void Function(GeoMapController geoMapController);
 
 class GeoMapController {
   GeoMapController({
@@ -65,10 +65,9 @@ class GeoMapController {
       _layers.add(GeoMarkerLayer(label: uiContext.safeTypeLabel));
     }
 
-    _markerLayerLookupMap = Map.fromIterable(
-        _layers.whereType<GeoMarkerLayer>(),
-        key: (layer) => layer.name,
-        value: (layer) => layer);
+    _markerLayerLookupMap = {
+      for (var layer in _layers.whereType<GeoMarkerLayer>()) layer.name: layer
+    };
 
     _setup(
       initialCenter: initialCenter,
@@ -286,7 +285,8 @@ class GeoMapController {
                 element: element,
                 index: i,
                 parentType: uiContext.qualifiedType.type,
-                parentValue: uiContext.callbacks.getRawValue(uiContext.qualifiedType.path),
+                parentValue: uiContext.callbacks
+                    .getRawValue(uiContext.qualifiedType.path),
                 menuIcon: enableMarkerBadges
                     ? Badge(
                         child: icon,
@@ -648,9 +648,7 @@ class _GeoMapContainerState extends State<GeoMapContainer> {
             ),
             child: widget.geoMapController.buildMenu(
               context,
-              widget.onRefresh != null
-                  ? widget.onRefresh
-                  : () => setState(() {}),
+              widget.onRefresh ?? () => setState(() {}),
               icon: widget.geoMapController.buildMenuIcon(context),
               //),
             ),
