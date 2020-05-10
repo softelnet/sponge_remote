@@ -405,7 +405,7 @@ class GeoMapController {
         PopupMenuItem<String>(
           key: Key('map-menu-moveToData'),
           value: 'moveToData',
-          child: IconTextPopupMenuItemWidget(
+          child: const IconTextPopupMenuItemWidget(
             icon: Icons.list,
             text: 'Move to data',
           ),
@@ -429,7 +429,7 @@ class GeoMapController {
           ),
           enabled: enableCurrentLocation,
         ),
-        PopupMenuItem<String>(
+        const PopupMenuItem<String>(
           key: Key('map-menu-reset'),
           value: 'reset',
           child: IconTextPopupMenuItemWidget(
@@ -447,7 +447,7 @@ class GeoMapController {
               isOn: fullScreen,
             ),
           ),
-        if (layerItems.isNotEmpty) PopupMenuDivider(),
+        if (layerItems.isNotEmpty) const PopupMenuDivider(),
         ...layerItems,
       ],
       padding: EdgeInsets.zero,
@@ -571,9 +571,9 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
       List<Marker> markers) {
     return MarkerClusterLayerOptions(
       maxClusterRadius: 60,
-      size: Size(40, 40),
+      size: const Size(40, 40),
       fitBoundsOptions: FitBoundsOptions(
-        padding: EdgeInsets.all(50),
+        padding: const EdgeInsets.all(50),
       ),
       markers: markers,
       polygonOptions: PolygonOptions(

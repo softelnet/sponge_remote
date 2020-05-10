@@ -45,13 +45,13 @@ class AppDrawer extends StatelessWidget {
             ),
           ListTile(
             leading: Icon(Icons.directions_run, color: iconColor),
-            title: Text('Actions'),
+            title: const Text('Actions'),
             onTap: () async =>
                 showDistinctScreen(context, DefaultRoutes.ACTIONS),
           ),
           ListTile(
             leading: Icon(Icons.event, color: iconColor),
-            title: Text('Events'),
+            title: const Text('Events'),
             enabled: service.spongeService?.isGrpcEnabled ?? false,
             onTap: () async =>
                 showDistinctScreen(context, DefaultRoutes.EVENTS),
@@ -59,19 +59,19 @@ class AppDrawer extends StatelessWidget {
           Divider(),
           ListTile(
             leading: Icon(Icons.cloud, color: iconColor),
-            title: Text('Connections'),
+            title: const Text('Connections'),
             onTap: () async =>
                 showChildScreen(context, DefaultRoutes.CONNECTIONS),
           ),
           ListTile(
             leading: Icon(Icons.settings, color: iconColor),
-            title: Text('Settings'),
+            title: const Text('Settings'),
             onTap: () async => showChildScreen(context, DefaultRoutes.SETTINGS),
           ),
           Divider(),
           ListTile(
             leading: Icon(Icons.info, color: iconColor),
-            title: Text('About'),
+            title: const Text('About'),
             onTap: () async {
               Navigator.pop(context);
               await showAboutAppDialog(context);
