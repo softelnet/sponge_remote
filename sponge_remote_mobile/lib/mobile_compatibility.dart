@@ -22,7 +22,9 @@ import 'package:pedantic/pedantic.dart';
 
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
-import 'package:sponge_remote_mobile/src/geo_widgets.dart';
+import 'package:sponge_remote_mobile/src/geo_map_controller.dart';
+import 'package:sponge_remote_mobile/src/geo_map_page.dart';
+import 'package:sponge_remote_mobile/src/geo_map_widget.dart';
 
 class MobileDefaultTypeGuiProviderRegistry
     extends DefaultTypeGuiProviderRegistry {
