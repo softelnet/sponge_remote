@@ -15,9 +15,17 @@
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_grpc_client_dart/sponge_grpc_client_dart_web.dart';
+import 'package:timezone/browser.dart' as tz;
 
 class WebApplicationService extends FlutterApplicationService<WebSpongeService,
     FlutterApplicationSettings> {
+  @override
+  Future<void> init() async {
+    await super.init();
+
+    await tz.initializeTimeZone();
+  }
+
   @override
   Future<WebSpongeService> createSpongeService(
           SpongeConnection connection,
@@ -28,9 +36,13 @@ class WebApplicationService extends FlutterApplicationService<WebSpongeService,
 }
 
 class WebSpongeService extends FlutterSpongeService {
-  WebSpongeService(SpongeConnection connection, TypeConverter typeConverter,
-      FeatureConverter featureConverter, TypeGuiProviderRegistry typeGuiProviderRegistry)
-      : super(connection, typeConverter, featureConverter, typeGuiProviderRegistry);
+  WebSpongeService(
+      SpongeConnection connection,
+      TypeConverter typeConverter,
+      FeatureConverter featureConverter,
+      TypeGuiProviderRegistry typeGuiProviderRegistry)
+      : super(connection, typeConverter, featureConverter,
+            typeGuiProviderRegistry);
 
   @override
   SpongeGrpcClient createSpongeGrpcClient(

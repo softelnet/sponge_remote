@@ -17,6 +17,7 @@ import 'package:logging/logging.dart';
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote_mobile/mobile_compatibility.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 class MobileApplicationService extends FlutterApplicationService<
     MobileSpongeService, FlutterApplicationSettings> {
@@ -33,6 +34,8 @@ class MobileApplicationService extends FlutterApplicationService<
     await super.init();
 
     await _initLocalNotifications();
+
+    tz.initializeTimeZones();
   }
 
   Future<void> _initLocalNotifications() async {
@@ -113,13 +116,11 @@ class MobileApplicationService extends FlutterApplicationService<
 }
 
 class MobileSpongeService extends FlutterSpongeService {
-  MobileSpongeService(SpongeConnection connection, TypeConverter typeConverter,
-      FeatureConverter featureConverter, TypeGuiProviderRegistry typeGuiProviderRegistry)
-      : super(connection, typeConverter, featureConverter, typeGuiProviderRegistry);
-
-  // @override
-  // SpongeGrpcClient createSpongeGrpcClient(
-  //     SpongeRestClient client, SpongeConnection connection) {
-  //   return DefaultSpongeGrpcClient(client);
-  // }
+  MobileSpongeService(
+      SpongeConnection connection,
+      TypeConverter typeConverter,
+      FeatureConverter featureConverter,
+      TypeGuiProviderRegistry typeGuiProviderRegistry)
+      : super(connection, typeConverter, featureConverter,
+            typeGuiProviderRegistry);
 }
