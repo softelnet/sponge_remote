@@ -19,6 +19,7 @@ import 'package:latlong/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
+// TODO Uncomment for FlutterMap 0.9.0. import 'package:proj4dart/proj4dart.dart' as proj4;
 
 typedef OnMapCloseCallback = void Function(GeoMapController geoMapController);
 
@@ -111,6 +112,8 @@ class GeoMapController {
   LatLng center;
   double zoom;
 
+  GeoCrs get crs => _geoMap.crs;
+
   MapController _mapController;
 
   void bindMapController(MapController mapController) =>
@@ -118,26 +121,21 @@ class GeoMapController {
 
   List get data => (uiContext.value as List) ?? [];
 
-  GeoLayer getTopVisibleBasemapLayer() {
-    var result;
+  String getTopVisibleLayerAttribution() {
+    String attribution;
 
     _layers.asMap().forEach((index, layer) {
-      if (layer is GeoTileLayer && visibleLayers[index]) {
-        result = layer;
+      if (visibleLayers[index] && layer.features != null) {
+        attribution ??= layer.features[Features.GEO_ATTRIBUTION];
       }
     });
 
-    return result;
+    return attribution;
   }
 
-  String get attribution {
-    var topBasemapLayer = getTopVisibleBasemapLayer();
-
-    return (topBasemapLayer?.features != null
-            ? topBasemapLayer?.features[Features.GEO_ATTRIBUTION]
-            : null) ??
-        _geoMap.features[Features.GEO_ATTRIBUTION];
-  }
+  String get attribution =>
+      getTopVisibleLayerAttribution() ??
+      _geoMap.features[Features.GEO_ATTRIBUTION];
 
   Color get backgroundColor => string2color(_geoMap.features[Features.COLOR]);
 
@@ -203,24 +201,49 @@ class GeoMapController {
     }
   }
 
-  List<TileLayerOptions> createBaseLayers() {
-    var layerOptions = <TileLayerOptions>[];
+  LayerOptions _createBaseLayer(GeoLayer layer) {
+    if (layer is GeoTileLayer && layer.urlTemplate != null) {
+      return TileLayerOptions(
+        urlTemplate: layer.urlTemplate,
+        additionalOptions: layer.options,
+        subdomains: layer.subdomains ?? [],
+        tms: Features.getBool(layer.features, Features.GEO_TMS,
+            orElse: () => false),
+        opacity: Features.getDouble(layer.features, Features.OPACITY,
+            orElse: () => 1.0),
+        backgroundColor: Colors.transparent,
+      );
+    } else if (layer is GeoWmsLayer && layer.baseUrl != null) {
+      // TODO Uncomment for FlutterMap 0.9.0.
+      // return TileLayerOptions(
+      //   wmsOptions: WMSTileLayerOptions(
+      //     baseUrl: layer.baseUrl,
+      //     layers: layer.layers ?? [],
+      //     styles: layer.styles ?? [],
+      //     format: layer.format ?? 'image/png',
+      //     version: layer.version ?? '1.1.1',
+      //     transparent: layer.transparent ?? true,
+      //     crs: GeoMapController.createCrs(layer.crs) ?? const Epsg3857(),
+      //     otherParameters: layer.otherParameters ?? {},
+      //   ),
+      //   opacity: Features.getDouble(layer.features, Features.OPACITY,
+      //       orElse: () => 1.0),
+      //   backgroundColor: Colors.transparent,
+      // );
+    }
 
-    _layers.asMap().forEach((index, layer) {
-      if (visibleLayers[index] &&
-          layer is GeoTileLayer &&
-          layer.urlTemplate != null) {
-        layerOptions.add(
-          TileLayerOptions(
-            urlTemplate: layer.urlTemplate,
-            additionalOptions: layer.options,
-            subdomains: layer.subdomains ?? [],
-            tms: Features.getBool(layer.features, Features.GEO_TMS,
-                orElse: () => false),
-            opacity: Features.getDouble(layer.features, Features.OPACITY,
-                orElse: () => 1.0),
-          ),
-        );
+    return null;
+  }
+
+  List<LayerOptions> createBaseLayers() {
+    var layerOptions = <LayerOptions>[];
+
+    layers.asMap().forEach((index, layer) {
+      if (visibleLayers[index]) {
+        var uiLayer = _createBaseLayer(layer);
+        if (uiLayer != null) {
+          layerOptions.add(uiLayer);
+        }
       }
     });
 
@@ -230,8 +253,7 @@ class GeoMapController {
   Map<String, bool> _getLayerVisibility() {
     var layerVisibility = <String, bool>{};
     _layers.asMap().forEach((index, layer) {
-      layerVisibility[layer.name] =
-          layer is GeoMarkerLayer && visibleLayers[index];
+      layerVisibility[layer.name] = visibleLayers[index];
     });
 
     return layerVisibility;
@@ -331,15 +353,17 @@ class GeoMapController {
   void toggleLayerVisibility(int index) {
     visibleLayers[index] = !visibleLayers[index];
 
+    // TODO Doesn't work in FlutterMap 0.9.0.
+
     // Hide other layers in the same group if the layer has became visible.
     if (visibleLayers[index]) {
-      var goup = _layers[index]?.features[Features.GROUP];
-      if (goup != null) {
-        layers.asMap().forEach((i, l) {
-          if (i != index && _layers[i]?.features[Features.GROUP] == goup) {
+      var group = _layers[index]?.features[Features.GROUP];
+      if (group != null) {
+        for (var i = 0; i < layers.length; i++) {
+          if (i != index && _layers[i]?.features[Features.GROUP] == group) {
             visibleLayers[i] = false;
           }
-        });
+        }
       }
     }
   }
@@ -377,9 +401,7 @@ class GeoMapController {
           toggleLayerVisibility(value);
         }
 
-        if (onRefresh != null) {
-          onRefresh();
-        }
+        onRefresh?.call();
       },
       itemBuilder: (BuildContext context) => [
         PopupMenuItem<String>(
@@ -451,5 +473,32 @@ class GeoMapController {
       padding: EdgeInsets.zero,
       icon: icon,
     );
+  }
+
+  static Crs createCrs(GeoCrs geoCrs) {
+    return null;
+
+    // TODO Uncomment for FlutterMap 0.9.0.
+
+    // // TODO resolutions.
+    // var resolutions = <double>[
+    //   32768,
+    //   16384,
+    //   8192,
+    //   4096,
+    //   2048,
+    //   1024,
+    //   512,
+    //   256,
+    //   128
+    // ];
+
+    // return geoCrs != null
+    //     ? Proj4Crs.fromFactory(
+    //         code: geoCrs.code,
+    //         proj4Projection:
+    //             proj4.Projection.add(geoCrs.code, geoCrs.projection),
+    //         resolutions: resolutions)
+    //     : null;
   }
 }

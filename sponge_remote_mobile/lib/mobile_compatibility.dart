@@ -119,8 +119,13 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
     }
 
     if (editorContext.isThisRootRecordSingleLeadingField) {
+      var controller = _createGeoMapController(geoMap, editorContext, false);
       return GeoMapContainer(
-        geoMapController: _createGeoMapController(geoMap, editorContext, false),
+        geoMapController: controller,
+        onRefresh: () async {
+          await _onMapRefresh(controller);
+          await editorContext.callbacks.onRefresh();
+        },
       );
     } else {
       var label = editorContext.getDecorationLabel();
@@ -177,6 +182,11 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
   void _onMapClose(GeoMapController controller) {
     _saveMapState(controller);
     unawaited(_saveMapStateAsync(controller));
+  }
+
+  Future<void> _onMapRefresh(GeoMapController controller) async {
+    _saveMapState(controller);
+    await _saveMapStateAsync(controller);
   }
 
   void _saveMapState(GeoMapController controller) {

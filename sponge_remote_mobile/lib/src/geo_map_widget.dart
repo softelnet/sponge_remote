@@ -40,7 +40,14 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
   bool get clusterMarkers => widget.geoMapController.enableClusterMarkers;
 
   /// The map controller must be associated with the widget state.
-  final _mapController = MapController();
+  MapController _mapController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _mapController = MapController();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +99,8 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
       zoom: widget.geoMapController.initialZoom,
       minZoom: widget.geoMapController.minZoom,
       maxZoom: widget.geoMapController.maxZoom,
-      // The CRS is currently ignored.
+      crs: GeoMapController.createCrs(widget.geoMapController.crs) ??
+          const Epsg3857(),
       plugins: [
         if (clusterMarkers) MarkerClusterPlugin(),
         if (widget.geoMapController.enableCurrentLocation) UserLocationPlugin(),
