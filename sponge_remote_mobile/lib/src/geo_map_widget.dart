@@ -94,11 +94,17 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
   }
 
   MapOptions _createMapOptions() {
+    var crsMaxZoom =
+        (widget.geoMapController.crs?.resolutions?.length ?? 0) - 1;
+    if (crsMaxZoom < 0) {
+      crsMaxZoom = null;
+    }
+
     return MapOptions(
       center: widget.geoMapController.initialCenter,
       zoom: widget.geoMapController.initialZoom,
       minZoom: widget.geoMapController.minZoom,
-      maxZoom: widget.geoMapController.maxZoom,
+      maxZoom: widget.geoMapController.maxZoom ?? crsMaxZoom?.toDouble(),
       crs: GeoMapController.createCrs(widget.geoMapController.crs) ??
           const Epsg3857(),
       plugins: [

@@ -19,7 +19,8 @@ import 'package:latlong/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
-// TODO Uncomment for FlutterMap 0.9.0. import 'package:proj4dart/proj4dart.dart' as proj4;
+// TODO Uncomment for FlutterMap 0.9.0.
+import 'package:proj4dart/proj4dart.dart' as proj4;
 
 typedef OnMapCloseCallback = void Function(GeoMapController geoMapController);
 
@@ -215,21 +216,21 @@ class GeoMapController {
       );
     } else if (layer is GeoWmsLayer && layer.baseUrl != null) {
       // TODO Uncomment for FlutterMap 0.9.0.
-      // return TileLayerOptions(
-      //   wmsOptions: WMSTileLayerOptions(
-      //     baseUrl: layer.baseUrl,
-      //     layers: layer.layers ?? [],
-      //     styles: layer.styles ?? [],
-      //     format: layer.format ?? 'image/png',
-      //     version: layer.version ?? '1.1.1',
-      //     transparent: layer.transparent ?? true,
-      //     crs: GeoMapController.createCrs(layer.crs) ?? const Epsg3857(),
-      //     otherParameters: layer.otherParameters ?? {},
-      //   ),
-      //   opacity: Features.getDouble(layer.features, Features.OPACITY,
-      //       orElse: () => 1.0),
-      //   backgroundColor: Colors.transparent,
-      // );
+      return TileLayerOptions(
+        wmsOptions: WMSTileLayerOptions(
+          baseUrl: layer.baseUrl,
+          layers: layer.layers ?? [],
+          styles: layer.styles ?? [],
+          format: layer.format ?? 'image/png',
+          version: layer.version ?? '1.1.1',
+          transparent: layer.transparent ?? true,
+          crs: GeoMapController.createCrs(layer.crs) ?? const Epsg3857(),
+          otherParameters: layer.otherParameters ?? {},
+        ),
+        opacity: Features.getDouble(layer.features, Features.OPACITY,
+            orElse: () => 1.0),
+        backgroundColor: Colors.transparent,
+      );
     }
 
     return null;
@@ -475,30 +476,48 @@ class GeoMapController {
     );
   }
 
+  static final _predefinedCrsCodeMap = {
+    Epsg3857().code: Epsg3857(),
+    Epsg4326().code: Epsg4326(),
+  };
+
+  static final _predefinedResolutions = <double>[
+    32768,
+    16384,
+    8192,
+    4096,
+    2048,
+    1024,
+    512,
+    256,
+    128
+  ];
+
   static Crs createCrs(GeoCrs geoCrs) {
-    return null;
+    if (geoCrs?.code == null) {
+      return null;
+    }
+
+    if (geoCrs.projection == null) {
+      var crs = _predefinedCrsCodeMap[geoCrs.code];
+      if (crs != null) {
+        return crs;
+      }
+    }
 
     // TODO Uncomment for FlutterMap 0.9.0.
+    var projection = proj4.Projection(geoCrs.code);
+    if (projection == null) {
+      Validate.isTrue(geoCrs.projection != null,
+          'A projection definition must be specified for ${geoCrs.code}');
 
-    // // TODO resolutions.
-    // var resolutions = <double>[
-    //   32768,
-    //   16384,
-    //   8192,
-    //   4096,
-    //   2048,
-    //   1024,
-    //   512,
-    //   256,
-    //   128
-    // ];
+      projection = proj4.Projection.add(geoCrs.code, geoCrs.projection);
+    }
 
-    // return geoCrs != null
-    //     ? Proj4Crs.fromFactory(
-    //         code: geoCrs.code,
-    //         proj4Projection:
-    //             proj4.Projection.add(geoCrs.code, geoCrs.projection),
-    //         resolutions: resolutions)
-    //     : null;
+    return Proj4Crs.fromFactory(
+      code: geoCrs.code,
+      proj4Projection: projection,
+      resolutions: geoCrs.resolutions ?? _predefinedResolutions,
+    );
   }
 }
