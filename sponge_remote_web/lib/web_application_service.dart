@@ -46,7 +46,7 @@ class WebSpongeService extends FlutterSpongeService {
 
   @override
   SpongeGrpcClient createSpongeGrpcClient(
-      SpongeRestClient client, SpongeConnection connection) {
+      SpongeClient client, SpongeConnection connection) {
     return WebSpongeGrpcClient(client);
   }
 }
