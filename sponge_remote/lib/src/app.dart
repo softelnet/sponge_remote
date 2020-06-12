@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
-//import 'package:fluro/fluro.dart';
 import 'package:provider/provider.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote/src/application_constants.dart';
@@ -29,9 +28,6 @@ class SpongeRemoteApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //var router = Router();
-    //configureRoutes(router);
-
     return FutureBuilder<FlutterApplicationService>(
       future: Future(() async {
         await service.init();
@@ -68,7 +64,6 @@ class SpongeRemoteApp extends StatelessWidget {
                         ),
                         initialRoute: DefaultRoutes.ACTIONS,
                         routes: guiFactory.createRoutes(),
-                        //onGenerateRoute: router.generator,
                         debugShowCheckedModeBanner: false,
                       );
                     },

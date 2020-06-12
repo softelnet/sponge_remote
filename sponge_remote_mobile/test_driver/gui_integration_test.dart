@@ -38,10 +38,6 @@ void main() {
       bool refresh = true,
       double dyScroll = -200,
     }) async {
-      // var drawer = find.byType('Drawer');
-      // await driver.tap(drawer);
-      // await driver.tap(find.text('Actions'));
-
       await driver.tap(find.byValueKey('connections'));
       await driver.tap(find.byValueKey('connection-$TEST_SERVICE'));
 
@@ -86,12 +82,6 @@ void main() {
         String arg, String value) async {
       var argFinder = findByValueKeyAsType(arg);
       await driver.tap(argFinder);
-      // var row =
-      //     find.ancestor(of: find.text(label), matching: find.byType('Row'));
-      // var dropdown =
-      //     find.descendant(of: row, matching: find.byType('DropdownButton'));
-
-      // await driver.tap(dropdown);
       await driver.tap(find.text(value));
 
       return argFinder;
@@ -152,7 +142,6 @@ void main() {
       Duration timeout,
     }) async {
       await driver.waitFor(find.text('$label: $value'), timeout: timeout);
-      //await driver.waitFor(find.text(value), timeout: timeout);
     }
 
     Future<void> waitForAbsentResult(
@@ -161,7 +150,6 @@ void main() {
       Duration timeout,
     }) async {
       await driver.waitForAbsent(find.text('$label: $value'), timeout: timeout);
-      //await driver.waitForAbsent(find.text(value), timeout: timeout);
     }
 
     setUpAll(() async {
@@ -853,8 +841,6 @@ void main() {
       test('call Markdown text (MarkdownText)', () async {
         await openAction('MarkdownText');
         await driver.tap(find.byType('ActionResultWidget'));
-        //find.descendant(
-        // of: actionFinder, matching: find.byType('MarkdownBody')));
         await driver.tap(find.pageBack());
       });
 
@@ -1465,7 +1451,6 @@ void main() {
 
         await openAction('GrpcApiManageSubscription', group: 'Events');
         await driver.tap(find.byValueKey('checkbox-Memo'));
-        //await driver.tap(find.byValueKey('checkbox-Notification'));
         await driver.tap(await findArg('subscribe'));
         await driver.tap(find.text('SAVE'));
       });

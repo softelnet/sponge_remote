@@ -57,14 +57,6 @@ class MobileBinaryTypeGuiProvider extends BinaryTypeGuiProvider {
             name: viewerContext.typeLabel,
             imageData: viewerContext.value,
             onSave: () async {
-              // if (!(await SimplePermissions.checkPermission(
-              //     Permission.WriteExternalStorage))) {
-              //   var status = await SimplePermissions.requestPermission(
-              //       Permission.WriteExternalStorage);
-              //   if (status != PermissionStatus.authorized) {
-              //     return;
-              //   }
-              // }
               Directory dir = await getApplicationDocumentsDirectory();
               return (await _saveFile(viewerContext, mimeType, dir)).path;
             });

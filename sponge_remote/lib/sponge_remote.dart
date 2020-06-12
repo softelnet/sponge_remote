@@ -14,5 +14,7 @@
 
 library sponge_remote;
 
+export 'src/about_dialog.dart';
 export 'src/app.dart';
+export 'src/application_constants.dart';
 export 'src/drawer.dart';

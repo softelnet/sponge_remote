@@ -19,7 +19,6 @@ import 'package:latlong/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
-// TODO Uncomment for FlutterMap 0.9.0.
 import 'package:proj4dart/proj4dart.dart' as proj4;
 
 typedef OnMapCloseCallback = void Function(GeoMapController geoMapController);
@@ -215,7 +214,6 @@ class GeoMapController {
         backgroundColor: Colors.transparent,
       );
     } else if (layer is GeoWmsLayer && layer.baseUrl != null) {
-      // TODO Uncomment for FlutterMap 0.9.0.
       return TileLayerOptions(
         wmsOptions: WMSTileLayerOptions(
           baseUrl: layer.baseUrl,
@@ -505,7 +503,6 @@ class GeoMapController {
       }
     }
 
-    // TODO Uncomment for FlutterMap 0.9.0.
     var projection = proj4.Projection(geoCrs.code);
     if (projection == null) {
       Validate.isTrue(geoCrs.projection != null,

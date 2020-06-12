@@ -15,16 +15,11 @@ dependencies:
 
   logging: ^0.11.4
 
-# TODO Uncomment after removing mobile-only dependencies from sponge_flutter_client.
-#  sponge_flutter_client:
-#    path: ../sponge_flutter_client
-
   sponge_flutter_api:
     path: ../../sponge_flutter_api
   sponge_remote:
     path: ../sponge_remote
 
-# TODO Remove after sponge_flutter_client is ready.
   sponge_client_dart: ^1.16.0
   sponge_grpc_client_dart: ^1.16.0
 dependency_overrides:
