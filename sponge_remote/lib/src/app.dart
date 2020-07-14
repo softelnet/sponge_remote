@@ -52,9 +52,10 @@ class SpongeRemoteApp extends StatelessWidget {
                       return MaterialApp(
                         title: APPLICATION_NAME,
                         theme: ThemeData(
-                          brightness: service.settings.isDarkMode
-                              ? Brightness.dark
-                              : Brightness.light,
+                          brightness:
+                              service.settings.themeMode == ThemeMode.light
+                                  ? Brightness.light
+                                  : Brightness.dark,
                           primarySwatch: Colors.teal,
                           floatingActionButtonTheme:
                               FloatingActionButtonThemeData(
@@ -62,6 +63,16 @@ class SpongeRemoteApp extends StatelessWidget {
                                 getFloatingButtonBackgroudColor(context),
                           ),
                         ),
+                        darkTheme: ThemeData(
+                          brightness: Brightness.dark,
+                          primarySwatch: Colors.teal,
+                          floatingActionButtonTheme:
+                              FloatingActionButtonThemeData(
+                            backgroundColor:
+                                getFloatingButtonBackgroudColor(context),
+                          ),
+                        ),
+                        themeMode: service.settings.themeMode,
                         initialRoute: DefaultRoutes.ACTIONS,
                         routes: guiFactory.createRoutes(),
                         debugShowCheckedModeBanner: false,
