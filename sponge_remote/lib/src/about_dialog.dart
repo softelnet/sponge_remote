@@ -35,7 +35,7 @@ Future<void> showAboutAppDialog(BuildContext context) async {
           TextSpan(
             style: headerTextStyle,
             text:
-                '\n\n$APPLICATION_NAME is a generic GUI client to Sponge services that allows users to run remote Sponge actions. '
+                '\n\n$APPLICATION_NAME provides a generic user interface to call remote Sponge actions. '
                 'It is released under the open-source Apache 2.0 license.',
           ),
           TextSpan(
