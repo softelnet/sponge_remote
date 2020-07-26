@@ -1,6 +1,6 @@
 name: sponge_remote
 description: A Sponge Remote base library.
-version: 0.16.0
+version: 0.16.1
 homepage: https://github.com/softelnet/sponge_remote/sponge_remote
 
 environment:

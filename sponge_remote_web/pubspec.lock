@@ -103,7 +103,7 @@ packages:
       name: flutter_bloc
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.0.0"
+    version: "4.0.1"
   flutter_colorpicker:
     dependency: transitive
     description:
@@ -117,7 +117,7 @@ packages:
       name: flutter_markdown
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.5"
+    version: "0.4.2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -377,21 +377,21 @@ packages:
       path: "../../sponge_flutter_api"
       relative: true
     source: path
-    version: "0.16.0"
+    version: "0.16.1"
   sponge_grpc_client_dart:
     dependency: "direct main"
     description:
       path: "../../sponge_grpc_client_dart"
       relative: true
     source: path
-    version: "1.16.0"
+    version: "1.16.1"
   sponge_remote:
     dependency: "direct main"
     description:
       path: "../sponge_remote"
       relative: true
     source: path
-    version: "0.16.0"
+    version: "0.16.1"
   stack_trace:
     dependency: transitive
     description:
@@ -461,7 +461,14 @@ packages:
       name: url_launcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.4.10"
+    version: "5.5.0"
+  url_launcher_linux:
+    dependency: transitive
+    description:
+      name: url_launcher_linux
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.1+1"
   url_launcher_macos:
     dependency: transitive
     description:
@@ -499,4 +506,4 @@ packages:
     version: "3.6.1"
 sdks:
   dart: ">=2.7.0 <3.0.0"
-  flutter: ">=1.16.0 <2.0.0"
+  flutter: ">=1.17.0 <2.0.0"
