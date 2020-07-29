@@ -41,7 +41,7 @@ Future<void> showAboutAppDialog(BuildContext context) async {
           TextSpan(
               style: noteTextStyle,
               text:
-                  '\n\nThe current version is in alpha phase and supports only a limited set of Sponge features.'),
+                  '\n\nThe current version is in ALPHA phase and supports only a limited set of Sponge features.'),
           TextSpan(
               style: aboutTextStyle,
               text:
