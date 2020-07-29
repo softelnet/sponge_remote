@@ -186,6 +186,132 @@ void main() {
       });
     });
 
+    group('Actions/Start', () {
+      test('call Depending arguments (DependingArgumentsAction)', () async {
+        await openAction('DependingArgumentsAction', group: 'Start');
+
+        var continent = 'Africa';
+        var country = 'Nigeria';
+        var city = 'Lagos';
+        var river = 'Niger';
+        var weather = 'Sunny';
+
+        await chooseProvidedValueFromSet('continent', continent);
+        await chooseProvidedValueFromSet('country', country);
+        await chooseProvidedValueFromSet('city', city);
+        await chooseProvidedValueFromSet('river', river);
+        await chooseProvidedValueFromSet('weather', weather);
+
+        await driver.tap(find.text('RUN'));
+        await waitForResult('Sentences',
+            'There is a city $city in $country in $continent. The river $river flows in $continent. It\'s ${weather.toLowerCase()}.');
+      });
+
+      test(
+          'call Depending arguments (DependingArgumentsAction) - change selection',
+          () async {
+        await openAction('DependingArgumentsAction', group: 'Start');
+
+        var continent = 'Africa';
+        var country = 'Nigeria';
+        var city = 'Lagos';
+        var river = 'Niger';
+        var weather = 'Sunny';
+
+        // The temporary selecttion.
+        await chooseProvidedValueFromSet('continent', 'Europe');
+        await chooseProvidedValueFromSet('country', 'Turkey');
+        await chooseProvidedValueFromSet('city', 'Istanbul');
+        await chooseProvidedValueFromSet('river', 'Danube');
+        await chooseProvidedValueFromSet('weather', weather);
+
+        // The actual selection.
+        await chooseProvidedValueFromSet('continent', continent);
+        await chooseProvidedValueFromSet('country', country);
+        await chooseProvidedValueFromSet('city', city);
+        await chooseProvidedValueFromSet('river', river);
+
+        await driver.tap(find.text('RUN'));
+        await waitForResult('Sentences',
+            'There is a city $city in $country in $continent. The river $river flows in $continent. It\'s ${weather.toLowerCase()}.');
+      });
+
+      test('call Depending arguments (DependingArgumentsAction) - clear',
+          () async {
+        await openAction('DependingArgumentsAction', group: 'Start');
+
+        var continent = 'Africa';
+        var country = 'Nigeria';
+        var city = 'Lagos';
+        var river = 'Niger';
+        var weather = 'Sunny';
+
+        await chooseProvidedValueFromSet('continent', continent);
+        await chooseProvidedValueFromSet('country', country);
+        await chooseProvidedValueFromSet('city', city);
+        await chooseProvidedValueFromSet('river', river);
+        await chooseProvidedValueFromSet('weather', weather);
+
+        await driver.waitFor(find.text(continent));
+        await driver.waitFor(find.text(country));
+        await driver.waitFor(find.text(city));
+        await driver.waitFor(find.text(river));
+        await driver.waitFor(find.text(weather));
+
+        await driver.tap(find.text('CLEAR'));
+
+        await driver.tap(find.text('CANCEL'));
+      });
+
+      test('call Draw a doodle (DrawDoodle) - clear', () async {
+        await openAction('DrawDoodle', group: 'Start');
+        await drawDoodle('DRAW DOODLE *');
+
+        await driver.tap(find.text('CLEAR'));
+        await driver.waitForAbsent(find.byType('Image'));
+
+        await driver.tap(find.text('CANCEL'));
+      });
+
+      // TODO Hangs.
+      // test('call Draw a doodle (DrawDoodle)', () async {
+      //   await openAction('DrawDoodle', group: 'Start');
+      //   await drawDoodle('DRAW DOODLE *');
+
+      //   await driver.waitFor(find.byType('Image'));
+
+      //   await driver.tap(find.text('OK'));
+      //   // TODO Hangs.
+      //   await waitForResult('Result', 'Success',
+      //       timeout: Duration(seconds: 120));
+      // });
+
+      test('call Geo map (ActionWithGeoMap)', () async {
+        await openAction('ActionWithGeoMap', group: 'Start');
+
+        await driver.waitFor(find.byType('FlutterMap'));
+
+        await driver.tap(find.byValueKey('map-menu'));
+        await driver.tap(find.text('Cluster data markers'));
+
+        await driver.tap(find.byValueKey('map-element-0'));
+        await driver.tap(find.text('View the location'));
+
+        await driver.tap(find.text('CLOSE'));
+
+        await driver.tap(find.pageBack());
+      });
+
+      test('call Hello world (HelloWorldAction)', () async {
+        await openAction('HelloWorldAction', group: 'Start');
+        var name = 'Sponge user';
+        await enterArgValue('name', name);
+
+        await driver.tap(find.text('RUN'));
+        await waitForResult('Greeting', 'Hello World! Hello $name!');
+      });
+    });
+
     group('Actions/Basic', () {
       test(
           'call Action returning a dynamic result (DynamicResultAction) - string arg',
@@ -225,22 +351,6 @@ void main() {
         await driver.waitFor(find.text('RUN'));
 
         await driver.tap(find.text('CANCEL'));
-      });
-
-      test('call Action with a geo map (ActionWithGeoMap)', () async {
-        await openAction('ActionWithGeoMap');
-
-        await driver.waitFor(find.byType('FlutterMap'));
-
-        await driver.tap(find.byValueKey('map-menu'));
-        await driver.tap(find.text('Cluster data markers'));
-
-        await driver.tap(find.byValueKey('map-element-0'));
-        await driver.tap(find.text('View the location'));
-
-        await driver.tap(find.text('CLOSE'));
-
-        await driver.tap(find.pageBack());
       });
 
       test('call Action with a pageable list (ActionWithPageableList)',
@@ -411,82 +521,6 @@ void main() {
         await driver.tap(find.text('RUN'));
         await waitForResult('Result', 'Success');
       });
-      test('call Action with depending arguments (DependingArgumentsAction)',
-          () async {
-        await openAction('DependingArgumentsAction');
-
-        var continent = 'Africa';
-        var country = 'Nigeria';
-        var city = 'Lagos';
-        var river = 'Niger';
-        var weather = 'Sunny';
-
-        await chooseProvidedValueFromSet('continent', continent);
-        await chooseProvidedValueFromSet('country', country);
-        await chooseProvidedValueFromSet('city', city);
-        await chooseProvidedValueFromSet('river', river);
-        await chooseProvidedValueFromSet('weather', weather);
-
-        await driver.tap(find.text('RUN'));
-        await waitForResult('Sentences',
-            'There is a city $city in $country in $continent. The river $river flows in $continent. It\'s ${weather.toLowerCase()}.');
-      });
-      test(
-          'call Action with depending arguments (DependingArgumentsAction) - change selection',
-          () async {
-        await openAction('DependingArgumentsAction');
-
-        var continent = 'Africa';
-        var country = 'Nigeria';
-        var city = 'Lagos';
-        var river = 'Niger';
-        var weather = 'Sunny';
-
-        // The temporary selecttion.
-        await chooseProvidedValueFromSet('continent', 'Europe');
-        await chooseProvidedValueFromSet('country', 'Turkey');
-        await chooseProvidedValueFromSet('city', 'Istanbul');
-        await chooseProvidedValueFromSet('river', 'Danube');
-        await chooseProvidedValueFromSet('weather', weather);
-
-        // The actual selection.
-        await chooseProvidedValueFromSet('continent', continent);
-        await chooseProvidedValueFromSet('country', country);
-        await chooseProvidedValueFromSet('city', city);
-        await chooseProvidedValueFromSet('river', river);
-
-        await driver.tap(find.text('RUN'));
-        await waitForResult('Sentences',
-            'There is a city $city in $country in $continent. The river $river flows in $continent. It\'s ${weather.toLowerCase()}.');
-      });
-
-      test(
-          'call Action with depending arguments (DependingArgumentsAction) - clear',
-          () async {
-        await openAction('DependingArgumentsAction');
-
-        var continent = 'Africa';
-        var country = 'Nigeria';
-        var city = 'Lagos';
-        var river = 'Niger';
-        var weather = 'Sunny';
-
-        await chooseProvidedValueFromSet('continent', continent);
-        await chooseProvidedValueFromSet('country', country);
-        await chooseProvidedValueFromSet('city', city);
-        await chooseProvidedValueFromSet('river', river);
-        await chooseProvidedValueFromSet('weather', weather);
-
-        await driver.waitFor(find.text(continent));
-        await driver.waitFor(find.text(country));
-        await driver.waitFor(find.text(city));
-        await driver.waitFor(find.text(river));
-        await driver.waitFor(find.text(weather));
-
-        await driver.tap(find.text('CLEAR'));
-
-        await driver.tap(find.text('CANCEL'));
-      });
 
       test(
           'call Action with provided arguments (ProvideByAction) - arg3 is null',
@@ -646,28 +680,6 @@ void main() {
 
         await waitForAbsentResult('Upper case text', text.toUpperCase());
       });
-
-      test('call Draw a doodle (DrawDoodle) - clear', () async {
-        await openAction('DrawDoodle');
-        await drawDoodle('DRAW DOODLE *');
-
-        await driver.tap(find.text('CLEAR'));
-        await driver.waitForAbsent(find.byType('Image'));
-
-        await driver.tap(find.text('CANCEL'));
-      });
-      // TODO Hangs.
-      // test('call Draw a doodle (DrawDoodle)', () async {
-      //   await openAction('DrawDoodle');
-      //   await drawDoodle('DRAW DOODLE *');
-
-      //   await driver.waitFor(find.byType('Image'));
-
-      //   await driver.tap(find.text('OK'));
-      //   // TODO Hangs.
-      //   await waitForResult('Result', 'Success',
-      //       timeout: Duration(seconds: 120));
-      // });
 
       test('call Enable args action (EnableArgsAction)', () async {
         await openAction('EnableArgsAction');
