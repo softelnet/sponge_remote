@@ -12,9 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:io';
+
 import 'package:connectivity/connectivity.dart';
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote_mobile/service_discovery.dart';
+
+Future<void> onFindAndAddServices(
+    BuildContext context, ConnectionsPresenter connectionsPresenter) async {
+  var networkStatus = await getNetworkStatus();
+  
+  if (networkStatus?.isLocal ?? false) {
+    if (Platform.isAndroid) {
+      var status = await Permission.location.status;
+      if (status.isUndetermined || status.isDenied || status.isRestricted) {
+        if (!(await Permission.location.request().isGranted)) {
+          return;
+        }
+      }
+    }
+
+    await findAndAddServices(connectionsPresenter);
+  } else {
+    await showWarningDialog(
+        context, 'Local service discovery requires WiFi turned on.');
+  }
+}
 
 Future<void> findAndAddServices(
     ConnectionsPresenter connectionsPresenter) async {
