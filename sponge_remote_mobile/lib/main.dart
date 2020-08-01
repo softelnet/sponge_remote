@@ -37,8 +37,15 @@ void main() async {
               text: 'Find new nearby services',
             ),
           ),
-          onSelected: (connectionsPresenter) =>
-              findAndAddServices(connectionsPresenter),
+          onSelected: (context, connectionsPresenter) async {
+            var networkStatus = await getNetworkStatus();
+            if (networkStatus?.isLocal ?? true) {
+              await findAndAddServices(connectionsPresenter);
+            } else {
+              await showWarningDialog(
+                  context, 'Local service discovery requires WiFi turned on.');
+            }
+          },
         ),
       ],
       onCreateRoutes: () => {
