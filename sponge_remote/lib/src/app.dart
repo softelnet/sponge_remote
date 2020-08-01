@@ -53,9 +53,9 @@ class SpongeRemoteApp extends StatelessWidget {
                         title: APPLICATION_NAME,
                         theme: ThemeData(
                           brightness:
-                              service.settings.themeMode == ThemeMode.light
-                                  ? Brightness.light
-                                  : Brightness.dark,
+                              service.settings.themeMode == ThemeMode.dark
+                                  ? Brightness.dark
+                                  : null,
                           primarySwatch: Colors.teal,
                           floatingActionButtonTheme:
                               FloatingActionButtonThemeData(
