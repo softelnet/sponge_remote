@@ -26,6 +26,8 @@ Future<void> showAboutAppDialog(BuildContext context) async {
   final TextStyle noteTextStyle =
       themeData.textTheme.bodyText2.apply(color: getSecondaryColor(context));
 
+  var buildNumber = await CommonUtils.getPackageBuildNumber();
+
   await showDefaultAboutAppDialog(
     context,
     contents: RichText(
@@ -67,6 +69,10 @@ Future<void> showAboutAppDialog(BuildContext context) async {
           TextSpan(
             style: aboutTextStyle,
             text: ' project home page.',
+          ),
+          TextSpan(
+            style: aboutTextStyle,
+            text: '\n\nBuild number: $buildNumber.',
           ),
         ],
       ),
