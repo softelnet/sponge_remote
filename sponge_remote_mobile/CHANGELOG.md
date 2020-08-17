@@ -1,4 +1,8 @@
-## 0.16.3 (not released yet)
+## 0.16.4 (not released yet)
+
+* Fixed the bug that prevented changing a map provider.
+  
+## 0.16.3 (2020-08-09)
 
 * Fixed the context menu color in the light mode.
 

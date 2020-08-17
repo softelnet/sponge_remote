@@ -14,16 +14,20 @@ dependencies:
   cupertino_icons: ^0.1.2
 
   path_provider: ^1.6.11
-  flutter_local_notifications: ^1.4.4+2
+  flutter_local_notifications: ^1.4.4+3
   multicast_dns: ^0.2.2
   connectivity: ^0.4.9
   permission_handler: ^5.0.1+1
 
-  flutter_map: ^0.9.0
+  flutter_map: ^0.10.1+1
   user_location: #^0.1.3 See https://github.com/igaurab/user_location_plugin/issues/58
     git:
       url: git://github.com/igaurab/user_location_plugin
-  flutter_map_marker_cluster: ^0.2.8
+  #flutter_map_marker_cluster: ^0.2.8 See https://github.com/lpongetti/flutter_map_marker_cluster/issues/46
+  flutter_map_marker_cluster:
+    git:
+      url: https://github.com/Xennis/flutter_map_marker_cluster.git
+      ref: fluttermap-10
   
   badges: ^1.1.1
   cached_network_image: ^2.2.0+1

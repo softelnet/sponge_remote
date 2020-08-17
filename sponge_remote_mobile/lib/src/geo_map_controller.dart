@@ -352,8 +352,6 @@ class GeoMapController {
   void toggleLayerVisibility(int index) {
     visibleLayers[index] = !visibleLayers[index];
 
-    // TODO Doesn't work in FlutterMap 0.9.0.
-
     // Hide other layers in the same group if the layer has became visible.
     if (visibleLayers[index]) {
       var group = _layers[index]?.features[Features.GROUP];
