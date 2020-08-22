@@ -1,4 +1,4 @@
-## 0.16.4 (not released yet)
+## 0.16.4 (2020-08-21)
 
 * Fixed the bug that prevented changing a map provider.
   
