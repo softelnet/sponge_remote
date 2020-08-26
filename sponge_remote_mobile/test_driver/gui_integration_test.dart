@@ -175,6 +175,8 @@ void main() {
         await driver.enterText('http://$testHost:8888');
 
         await driver.tap(find.byValueKey('anonymous'));
+
+        await driver.waitFor(find.byValueKey('username'));
         await driver.tap(find.byValueKey('username'));
         await driver.enterText('admin');
         await driver.tap(find.byValueKey('password'));
