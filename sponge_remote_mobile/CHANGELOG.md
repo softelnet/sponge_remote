@@ -1,3 +1,8 @@
+## 0.16.5 (2020-08-27)
+
+* Support for the align feature.
+* Support for a toggle button for the `BooleanType`.
+  
 ## 0.16.4 (2020-08-21)
 
 * Fixed the bug that prevented changing a map provider.

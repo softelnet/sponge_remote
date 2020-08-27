@@ -176,7 +176,7 @@ void main() {
 
         await driver.tap(find.byValueKey('anonymous'));
 
-        await driver.waitFor(find.byValueKey('username'));
+        await Future.delayed(startDelay);
         await driver.tap(find.byValueKey('username'));
         await driver.enterText('admin');
         await driver.tap(find.byValueKey('password'));
