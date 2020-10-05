@@ -42,8 +42,8 @@ class MobileApplicationService extends FlutterApplicationService<
     _localNotificationsPlugin = FlutterLocalNotificationsPlugin();
     await _localNotificationsPlugin.initialize(
       InitializationSettings(
-          AndroidInitializationSettings('@mipmap/ic_launcher'),
-          IOSInitializationSettings()),
+          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          iOS: IOSInitializationSettings()),
       onSelectNotification: _onSelectNotification,
     );
   }
@@ -83,14 +83,14 @@ class MobileApplicationService extends FlutterApplicationService<
       label ?? 'Sponge',
       message,
       NotificationDetails(
-          AndroidNotificationDetails(
+          android: AndroidNotificationDetails(
             'sponge',
             'Sponge',
             'Sponge channel',
             ticker: message,
             enableVibration: false,
           ),
-          IOSNotificationDetails()),
+          iOS: IOSNotificationDetails()),
       payload: eventData.event.id,
     );
   }

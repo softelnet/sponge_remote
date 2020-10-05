@@ -13,10 +13,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
 
-  path_provider: ^1.6.11
-  flutter_local_notifications: ^1.4.4+3
+  path_provider: ^1.6.18
+  flutter_local_notifications: ^2.0.0
   multicast_dns: ^0.2.2
-  connectivity: ^0.4.9
+  connectivity: ^0.4.9+3
   permission_handler: ^5.0.1+1
 
   flutter_map: ^0.10.1+1
@@ -25,14 +25,14 @@ dependencies:
       url: git://github.com/igaurab/user_location_plugin
   flutter_map_marker_cluster: ^0.3.1
   
-  badges: ^1.1.1
-  cached_network_image: ^2.2.0+1
+  badges: ^1.1.3
+  cached_network_image: ^2.3.2+1
 
   scrollable_positioned_list: ^0.1.7
 
   logging: ^0.11.4
 
-  material_design_icons_flutter: 4.0.5345
+  material_design_icons_flutter: 4.0.5655
 
   sponge_flutter_api: ^0.16.5
   sponge_client_dart: ^1.16.2
@@ -55,7 +55,7 @@ dev_dependencies:
   flutter_driver:
     sdk: flutter
 
-  flutter_launcher_icons: ^0.7.5
+  flutter_launcher_icons: ^0.8.1
   test: any
 
 flutter_icons:
