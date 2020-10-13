@@ -1,6 +1,6 @@
 name: sponge_remote_mobile
 description: Sponge Remote Mobile.
-version: 0.16.5+7
+version: 0.16.6+8
 
 environment:
   sdk: ">=2.8.0 <3.0.0"
@@ -34,7 +34,7 @@ dependencies:
 
   material_design_icons_flutter: 4.0.5655
 
-  sponge_flutter_api: ^0.16.5
+  sponge_flutter_api: ^0.16.6
   sponge_client_dart: ^1.16.2
   sponge_grpc_client_dart: ^1.16.2
 

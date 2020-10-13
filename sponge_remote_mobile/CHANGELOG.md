@@ -1,3 +1,7 @@
+## 0.16.6 (2020-10-12)
+
+* Upgraded material icons.
+  
 ## 0.16.5 (2020-08-27)
 
 * Support for the align feature.

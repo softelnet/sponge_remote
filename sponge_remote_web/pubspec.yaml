@@ -1,6 +1,6 @@
 name: sponge_remote_web
 description: Sponge Remote Web.
-version: 0.16.5
+version: 0.16.6
 
 environment:
   sdk: ">=2.8.0 <3.0.0"
