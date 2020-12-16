@@ -1,3 +1,7 @@
+## 0.16.7 (not released yet)
+
+* Validation of non-nullable action arguments recursively.
+
 ## 0.16.6 (2020-10-12)
 
 * Upgraded material icons.
