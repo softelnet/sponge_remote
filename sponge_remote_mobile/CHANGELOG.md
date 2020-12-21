@@ -1,4 +1,4 @@
-## 0.16.7 (not released yet)
+## 0.16.9 (2020-12-21)
 
 * Validation of non-nullable action arguments recursively.
 

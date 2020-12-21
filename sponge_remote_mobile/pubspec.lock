@@ -842,21 +842,21 @@ packages:
       path: "../../sponge_client_dart"
       relative: true
     source: path
-    version: "1.16.2"
+    version: "1.16.3"
   sponge_flutter_api:
     dependency: "direct main"
     description:
       path: "../../sponge_flutter_api"
       relative: true
     source: path
-    version: "0.16.6"
+    version: "0.16.9"
   sponge_grpc_client_dart:
     dependency: "direct main"
     description:
       path: "../../sponge_grpc_client_dart"
       relative: true
     source: path
-    version: "1.16.2"
+    version: "1.16.3"
   sponge_remote:
     dependency: "direct overridden"
     description:
