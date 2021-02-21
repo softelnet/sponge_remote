@@ -76,6 +76,11 @@ class SpongeRemoteApp extends StatelessWidget {
                         initialRoute: DefaultRoutes.ACTIONS,
                         routes: guiFactory.createRoutes(),
                         debugShowCheckedModeBanner: false,
+                        builder: (BuildContext context, Widget widget) {
+                          ErrorWidget.builder =
+                              _createErrorWidgetBuilder(widget);
+                          return widget;
+                        },
                       );
                     },
                   );
@@ -107,5 +112,10 @@ class SpongeRemoteApp extends StatelessWidget {
       home: child,
       debugShowCheckedModeBanner: false,
     );
+  }
+
+  ErrorWidgetBuilder _createErrorWidgetBuilder(Widget widget) {
+    return (FlutterErrorDetails errorDetails) =>
+        ErrorCircleWidget(error: errorDetails.exception);
   }
 }
