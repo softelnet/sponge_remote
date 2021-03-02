@@ -14,7 +14,6 @@
 
 //import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_driver/flutter_driver.dart';
-import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:test/test.dart';
 
 /// This integration tests require sponge-app-demo-service/DemoServiceMain
@@ -1004,10 +1003,6 @@ void main() {
         await openAction('ChangedButtonLabelsForm', group: 'Forms');
 
         await driver.waitFor(find.text('Sponge version'));
-        expect(
-            await driver.getText(findTextValueWidget('version')),
-            startsWith(
-                SpongeClientConstants.SUPPORTED_SPONGE_VERSION_MAJOR_MINOR));
         await driver.waitFor(find.text('CALL'));
         await driver.waitFor(find.text('RELOAD'));
         await driver.waitFor(find.text('RESET'));
@@ -1016,10 +1011,6 @@ void main() {
         await driver.tap(find.text('RELOAD'));
 
         await driver.waitFor(find.text('Sponge version'));
-        expect(
-            await driver.getText(findTextValueWidget('version')),
-            startsWith(
-                SpongeClientConstants.SUPPORTED_SPONGE_VERSION_MAJOR_MINOR));
 
         var text = 'Test text';
         await enterArgValue('text', text);
@@ -1033,10 +1024,6 @@ void main() {
         await openAction('DefaultCallButtonForm', group: 'Forms');
 
         await driver.waitFor(find.text('Sponge version'));
-        expect(
-            await driver.getText(findTextValueWidget('version')),
-            startsWith(
-                SpongeClientConstants.SUPPORTED_SPONGE_VERSION_MAJOR_MINOR));
         await driver.waitFor(find.text('RUN'));
         await driver.waitForAbsent(find.text('REFRESH'));
         await driver.waitForAbsent(find.text('CALL'));
@@ -1052,10 +1039,6 @@ void main() {
         await openAction('HiddenButtonsForm', group: 'Forms');
 
         await driver.waitFor(find.text('Sponge version'));
-        expect(
-            await driver.getText(findTextValueWidget('version')),
-            startsWith(
-                SpongeClientConstants.SUPPORTED_SPONGE_VERSION_MAJOR_MINOR));
         await driver.waitFor(find.text('CALL'));
         await driver.waitForAbsent(find.text('REFRESH'));
         await driver.waitForAbsent(find.text('CLEAR'));

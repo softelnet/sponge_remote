@@ -303,9 +303,12 @@ class GeoMapController {
                 controller: subActionsController,
                 element: element,
                 index: i,
-                parentType: uiContext.qualifiedType.type,
-                parentValue: uiContext.callbacks
-                    .getRawValue(uiContext.qualifiedType.path),
+                typeValueBundle: RefTypeValueBundle(
+                    uiContext.callbacks.rootType,
+                    uiContext.callbacks.rootValue,
+                    uiContext.qualifiedType.type,
+                    uiContext.callbacks
+                        .getRawValue(uiContext.qualifiedType.path)),
                 menuIcon: enableMarkerBadges
                     ? Badge(
                         child: icon,

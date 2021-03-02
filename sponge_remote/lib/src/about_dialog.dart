@@ -47,7 +47,7 @@ Future<void> showAboutAppDialog(BuildContext context) async {
           TextSpan(
               style: aboutTextStyle,
               text:
-                  '\n\nThe supported Sponge server versions are ${SpongeServiceConstants.SUPPORTED_SPONGE_VERSION_MAJOR_MINOR}.*.'),
+                  '\n\nThe supported Sponge server protocol version is ${SpongeServiceConstants.PROTOCOL_VERSION}.'),
           TextSpan(
             style: aboutTextStyle,
             text: '\n\nFor more information please visit the ',
