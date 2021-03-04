@@ -2,6 +2,8 @@ name: sponge_remote_mobile
 description: Sponge Remote Mobile.
 version: 0.16.9+9
 
+publish_to: none
+
 environment:
   sdk: ">=2.8.0 <3.0.0"
 

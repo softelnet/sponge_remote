@@ -1042,7 +1042,7 @@ void main() {
 
         await driver.tap(find.text('CLOSE'));
       });
-    });
+    }, timeout: Timeout(Duration(minutes: 1)));
     group('Actions/Forms', () {
       test('call Changed button labels form (ChangedButtonLabelsForm)',
           () async {
@@ -1403,7 +1403,7 @@ void main() {
 
         await driver.tap(find.pageBack());
       });
-    });
+    }, timeout: Timeout(Duration(minutes: 1)));
 
     group('Actions/Digits', () {
       // TODO Hangs.

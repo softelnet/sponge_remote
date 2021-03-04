@@ -122,10 +122,13 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
     } else {
       var label = editorContext.getDecorationLabel();
 
-      return FlatButton.icon(
+      return TextButton.icon(
         key: Key('open-map'),
-        color: Theme.of(editorContext.context).primaryColor,
-        textColor: Colors.white,
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(
+              Theme.of(editorContext.context).primaryColor),
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+        ),
         label: Text(label?.toUpperCase() ?? 'MAP'),
         icon: Icon(
           Icons.map,

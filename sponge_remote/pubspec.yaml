@@ -3,6 +3,8 @@ description: A Sponge Remote base library.
 version: 0.16.6
 homepage: https://github.com/softelnet/sponge_remote/sponge_remote
 
+publish_to: none
+
 environment:
   sdk: ">=2.8.0 <3.0.0"
 
