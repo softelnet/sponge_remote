@@ -243,7 +243,7 @@ packages:
       name: flutter_compass
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.7"
+    version: "0.5.1"
   flutter_driver:
     dependency: "direct dev"
     description: flutter
@@ -283,21 +283,28 @@ packages:
       name: flutter_map
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.10.1+1"
+    version: "0.11.0"
+  flutter_map_location:
+    dependency: "direct main"
+    description:
+      name: flutter_map_location
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.7.1"
   flutter_map_marker_cluster:
     dependency: "direct main"
     description:
       name: flutter_map_marker_cluster
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.1"
+    version: "0.3.4"
   flutter_map_marker_popup:
     dependency: transitive
     description:
       name: flutter_map_marker_popup
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.4"
+    version: "0.2.0"
   flutter_markdown:
     dependency: transitive
     description:
@@ -431,21 +438,21 @@ packages:
       name: location
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.2"
+    version: "3.2.4"
   location_platform_interface:
     dependency: transitive
     description:
       name: location_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.1.0"
   location_web:
     dependency: transitive
     description:
       name: location_web
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   logging:
     dependency: "direct main"
     description:
@@ -725,7 +732,7 @@ packages:
       name: rxdart
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.23.1"
+    version: "0.24.1"
   scrollable_positioned_list:
     dependency: "direct main"
     description:
@@ -1018,15 +1025,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.1+1"
-  user_location:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "854e17206bb5ad9118f4ec8d0e2d8cc285028733"
-      url: "git://github.com/igaurab/user_location_plugin"
-    source: git
-    version: "0.1.3"
   uuid:
     dependency: transitive
     description:

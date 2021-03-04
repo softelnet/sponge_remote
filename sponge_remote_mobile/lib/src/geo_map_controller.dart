@@ -435,20 +435,21 @@ class GeoMapController {
           value: 'enableCurrentLocation',
           child: IconTextPopupMenuItemWidget(
             icon: MdiIcons.crosshairsGps,
-            text: 'Show current location (experimental)',
+            text: 'Show current location',
             isOn: enableCurrentLocation,
           ),
         ),
-        PopupMenuItem<String>(
-          key: Key('map-menu-followCurrentLocation'),
-          value: 'followCurrentLocation',
-          child: IconTextPopupMenuItemWidget(
-            icon: MdiIcons.locationEnter,
-            text: 'Follow current location',
-            isOn: followCurrentLocation,
-          ),
-          enabled: enableCurrentLocation,
-        ),
+        // TODO Not available in flutter_map_location.
+        // PopupMenuItem<String>(
+        //   key: Key('map-menu-followCurrentLocation'),
+        //   value: 'followCurrentLocation',
+        //   child: IconTextPopupMenuItemWidget(
+        //     icon: MdiIcons.locationEnter,
+        //     text: 'Follow current location',
+        //     isOn: followCurrentLocation,
+        //   ),
+        //   enabled: enableCurrentLocation,
+        // ),
         const PopupMenuItem<String>(
           key: Key('map-menu-reset'),
           value: 'reset',

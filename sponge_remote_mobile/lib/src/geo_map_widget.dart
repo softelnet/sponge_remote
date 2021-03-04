@@ -14,10 +14,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_location/flutter_map_location.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote_mobile/src/geo_map_controller.dart';
-import 'package:user_location/user_location.dart';
 
 class GeoMapWidget extends StatefulWidget {
   GeoMapWidget({
@@ -41,6 +41,8 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
 
   /// The map controller must be associated with the widget state.
   MapController _mapController;
+
+  final List<Marker> _userLocationMarkers = <Marker>[];
 
   @override
   void initState() {
@@ -74,7 +76,9 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
                 if (!clusterMarkers) MarkerLayerOptions(markers: markers),
                 if (clusterMarkers) _createMarkerClusterLayerOptions(markers),
                 if (widget.geoMapController.enableCurrentLocation)
-                  _createUserLocationOptions(markers),
+                  MarkerLayerOptions(markers: _userLocationMarkers),
+                if (widget.geoMapController.enableCurrentLocation)
+                  _createUserLocationOptions(_userLocationMarkers),
               ],
               mapController: _mapController,
             ),
@@ -109,7 +113,7 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
           const Epsg3857(),
       plugins: [
         if (clusterMarkers) MarkerClusterPlugin(),
-        if (widget.geoMapController.enableCurrentLocation) UserLocationPlugin(),
+        if (widget.geoMapController.enableCurrentLocation) LocationPlugin(),
       ],
       onPositionChanged: (MapPosition position, bool hasGesture) {
         // Update the map position in the geo map controller.
@@ -167,30 +171,83 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     );
   }
 
-  UserLocationOptions _createUserLocationOptions(List<Marker> markers) {
-    return UserLocationOptions(
-      context: context,
-      mapController: _mapController,
+  LocationOptions _createUserLocationOptions(List<Marker> markers) {
+    return LocationOptions(
       markers: markers,
-      zoomToCurrentLocationOnLoad: false,
-      updateMapLocationOnPositionChange:
-          widget.geoMapController.followCurrentLocation,
-      moveToCurrentLocationFloatingActionButton:
-          _buildMoveToCurrentLocationFloatingActionButton(),
-      fabBottom: widget.geoMapController.fabMargin,
-      fabRight: widget.geoMapController.fabMargin,
-      fabWidth: widget.geoMapController.fabSize,
-      fabHeight: widget.geoMapController.fabSize,
+      onLocationRequested: (LatLngData ld) {
+        if (ld == null || ld.location == null) {
+          return;
+        }
+        _mapController?.move(ld.location, 16.0);
+      },
+      buttonBuilder: (BuildContext context,
+          ValueNotifier<LocationServiceStatus> status, Function onPressed) {
+        return Align(
+          alignment: Alignment.bottomRight,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: widget.geoMapController.fabMargin,
+              right: widget.geoMapController.fabMargin,
+            ),
+            child: Opacity(
+              opacity: widget.geoMapController.fabOpacity,
+              child: SizedBox(
+                width: widget.geoMapController.fabSize,
+                height: widget.geoMapController.fabSize,
+                child: FloatingActionButton(
+                  onPressed: () => onPressed(),
+                  heroTag: 'fabMoveToCurrentLocation',
+                  child: ValueListenableBuilder<LocationServiceStatus>(
+                      valueListenable: status,
+                      builder: (BuildContext context,
+                          LocationServiceStatus value, Widget child) {
+                        switch (value) {
+                          case LocationServiceStatus.disabled:
+                          case LocationServiceStatus.permissionDenied:
+                          case LocationServiceStatus.unsubscribed:
+                            return const Icon(
+                              Icons.location_disabled,
+                              color: Colors.white,
+                            );
+                            break;
+                          default:
+                            return const Icon(
+                              Icons.location_searching,
+                              color: Colors.white,
+                            );
+                            break;
+                        }
+                      }),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
+    // return UserLocationOptions(
+    //   context: context,
+    //   mapController: _mapController,
+    //   markers: markers,
+    //   zoomToCurrentLocationOnLoad: false,
+    //   updateMapLocationOnPositionChange:
+    //       widget.geoMapController.followCurrentLocation,
+    //   moveToCurrentLocationFloatingActionButton:
+    //       _buildMoveToCurrentLocationFloatingActionButton(),
+    //   fabBottom: widget.geoMapController.fabMargin,
+    //   fabRight: widget.geoMapController.fabMargin,
+    //   fabWidth: widget.geoMapController.fabSize,
+    //   fabHeight: widget.geoMapController.fabSize,
+    // );
   }
 
-  Widget _buildMoveToCurrentLocationFloatingActionButton() => Opacity(
-      opacity: widget.geoMapController.fabOpacity,
-      child: FloatingActionButton(
-        heroTag: 'fabMoveToCurrentLocation',
-        onPressed: null,
-        child: Icon(Icons.my_location),
-      ));
+  // Widget _buildMoveToCurrentLocationFloatingActionButton() => Opacity(
+  //     opacity: widget.geoMapController.fabOpacity,
+  //     child: FloatingActionButton(
+  //       heroTag: 'fabMoveToCurrentLocation',
+  //       onPressed: null,
+  //       child: Icon(Icons.my_location),
+  //     ));
 }
 
 class GeoMapContainer extends StatefulWidget {
