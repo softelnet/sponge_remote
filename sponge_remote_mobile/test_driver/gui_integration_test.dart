@@ -99,6 +99,14 @@ void main() {
       return argFinder;
     }
 
+    Future<SerializableFinder> findWidget(SerializableFinder finder,
+        {Duration timeout}) async {
+      var parentFinder = find.byType('ListView');
+      await driver.scrollUntilVisible(parentFinder, finder, dyScroll: -20);
+
+      return finder;
+    }
+
     Future<SerializableFinder> tapArg(String arg, {Duration timeout}) async {
       var argFinder = await findArg(arg, timeout: timeout);
       await driver.tap(argFinder, timeout: timeout);
@@ -813,6 +821,44 @@ void main() {
         await driver.waitFor(find.text('Index: $index'));
         await driver.tap(find.text('CLOSE'));
 
+        // The 'Update a header' context action.
+        var header = 'Header';
+        await enterArgValue('header', header);
+        await driver.tap(find.descendant(
+            of: findListElement('fruits', index),
+            matching: find.byType('SubActionsWidget')));
+        await driver.tap(find.text('Update a header'));
+
+        header += ' 2';
+        await enterArgValue('header', header);
+        await driver.tap(find.text('RUN'));
+
+        await driver.waitFor(find.text(header));
+
+        // The 'Action record' context action.
+        await driver.tap(find.descendant(
+            of: findListElement('fruits', index),
+            matching: find.byType('SubActionsWidget')));
+        await driver.tap(find.text('Action record'));
+
+        header += ' 3';
+        await enterArgValue('record.header', header);
+        await driver.tap(await findWidget(find.text('RUN')));
+
+        await driver.waitFor(find.text(header));
+
+        // The 'Action record full' context action.
+        await driver.tap(find.descendant(
+            of: findListElement('fruits', index),
+            matching: find.byType('SubActionsWidget')));
+        await driver.tap(find.text('Action record full'));
+
+        header += ' 4';
+        await enterArgValue('header', header);
+        await driver.tap(await findWidget(find.text('RUN')));
+
+        await driver.waitFor(find.text(header), timeout: Duration(minutes: 1));
+
         // The 'Update a whole list' context action.
         await driver.tap(find.descendant(
             of: findListElement('fruits', index),
@@ -822,7 +868,7 @@ void main() {
             of: findListElement('fruits', 3),
             matching: find.text('Strawberry')));
 
-        await driver.tap(find.pageBack());
+        await driver.tap(find.pageBack(), timeout: Duration(minutes: 1));
       });
 // TODO Hangs.
       // test('call HTML file output (HtmlFileOutput)', () async {
