@@ -35,7 +35,7 @@ void main() {
       String name, {
       String group = 'Basic',
       bool refresh = true,
-      double dyScroll = -200,
+      double dyScroll = -100,
     }) async {
       await driver.tap(find.byValueKey('connections'));
       await driver.tap(find.byValueKey('connection-$TEST_SERVICE'));
