@@ -15,7 +15,7 @@
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong/latlong.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
@@ -311,10 +311,10 @@ class GeoMapController {
                         .getRawValue(uiContext.qualifiedType.path)),
                 menuIcon: enableMarkerBadges
                     ? Badge(
-                        child: icon,
                         badgeContent: Text(label),
                         shape: BadgeShape.square,
                         badgeColor: badgeColor,
+                        child: icon,
                       )
                     : icon,
                 header: showMarkerMenuHeader ? Text(label) : null,
@@ -342,13 +342,13 @@ class GeoMapController {
   Widget buildMenuIcon(BuildContext context) => Opacity(
         opacity: fabOpacity,
         child: SizedBox(
+          width: fabSize,
+          height: fabSize,
           child: FloatingActionButton(
             heroTag: 'fabMenu',
             onPressed: null,
             child: Icon(getPopupMenuIconData(context)),
           ),
-          width: fabSize,
-          height: fabSize,
         ),
       );
 
@@ -375,8 +375,8 @@ class GeoMapController {
           CheckedPopupMenuItem<int>(
             key: Key('map-menu-layer-$index'),
             value: index,
-            child: Text(layer.label ?? layer.name ?? 'Layer ${index + 1}'),
             checked: visibleLayers[index],
+            child: Text(layer.label ?? layer.name ?? 'Layer ${index + 1}'),
           ),
         ));
 
@@ -505,7 +505,7 @@ class GeoMapController {
       }
     }
 
-    var projection = proj4.Projection(geoCrs.code);
+    var projection = proj4.Projection.get(geoCrs.code);
     if (projection == null) {
       Validate.isTrue(geoCrs.projection != null,
           'A projection definition must be specified for ${geoCrs.code}');

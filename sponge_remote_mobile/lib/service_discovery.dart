@@ -14,7 +14,8 @@
 
 import 'dart:convert';
 
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:network_info_plus/network_info_plus.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:multicast_dns/multicast_dns.dart';
@@ -48,7 +49,8 @@ Stream<DiscoveredService> discoverServices(
     return;
   }
 
-  var wifiName = await connectivity.getWifiName();
+  final info = NetworkInfo();
+  var wifiName = await info.getWifiName();
 
   final client = MDnsClient();
 

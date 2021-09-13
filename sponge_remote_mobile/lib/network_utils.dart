@@ -14,8 +14,9 @@
 
 import 'dart:io';
 
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:network_info_plus/network_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_remote_mobile/service_discovery.dart';
@@ -23,11 +24,11 @@ import 'package:sponge_remote_mobile/service_discovery.dart';
 Future<void> onFindAndAddServices(
     BuildContext context, ConnectionsPresenter connectionsPresenter) async {
   var networkStatus = await getNetworkStatus();
-  
+
   if (networkStatus?.isLocal ?? false) {
     if (Platform.isAndroid) {
       var status = await Permission.location.status;
-      if (status.isUndetermined || status.isDenied || status.isRestricted) {
+      if (!status.isGranted) {
         if (!(await Permission.location.request().isGranted)) {
           return;
         }
@@ -98,7 +99,8 @@ Future<NetworkStatus> getNetworkStatus() async {
 
   switch (await connectivity.checkConnectivity()) {
     case ConnectivityResult.wifi:
-      return NetworkStatus(await connectivity.getWifiName(), true);
+      final info = NetworkInfo();
+      return NetworkStatus(await info.getWifiName(), true);
     case ConnectivityResult.mobile:
     case ConnectivityResult.none:
       return NetworkStatus(null, false);

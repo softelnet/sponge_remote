@@ -15,10 +15,15 @@
 import 'package:sponge_client_dart/sponge_client_dart.dart';
 import 'package:sponge_flutter_api/sponge_flutter_api.dart';
 import 'package:sponge_grpc_client_dart/sponge_grpc_client_dart_web.dart';
+import 'package:sponge_remote_web/web_compatibility.dart';
 import 'package:timezone/browser.dart' as tz;
 
 class WebApplicationService extends FlutterApplicationService<WebSpongeService,
     FlutterApplicationSettings> {
+  WebApplicationService() {
+    typeGuiProviderRegistry = WebDefaultTypeGuiProviderRegistry();
+  }
+
   @override
   Future<void> init() async {
     await super.init();

@@ -42,8 +42,6 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
   /// The map controller must be associated with the widget state.
   MapController _mapController;
 
-  final List<Marker> _userLocationMarkers = <Marker>[];
-
   @override
   void initState() {
     super.initState();
@@ -69,20 +67,20 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
       return Stack(
         children: [
           Container(
+            color: widget.geoMapController.backgroundColor,
             child: FlutterMap(
               options: _createMapOptions(),
               layers: [
                 ...widget.geoMapController.createBaseLayers(),
                 if (!clusterMarkers) MarkerLayerOptions(markers: markers),
                 if (clusterMarkers) _createMarkerClusterLayerOptions(markers),
+              ],
+              nonRotatedLayers: [
                 if (widget.geoMapController.enableCurrentLocation)
-                  MarkerLayerOptions(markers: _userLocationMarkers),
-                if (widget.geoMapController.enableCurrentLocation)
-                  _createUserLocationOptions(_userLocationMarkers),
+                  _createUserLocationOptions(),
               ],
               mapController: _mapController,
             ),
-            color: widget.geoMapController.backgroundColor,
           ),
           if (attribution != null) _buildAttributionWidget(attribution),
         ],
@@ -171,17 +169,10 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
     );
   }
 
-  LocationOptions _createUserLocationOptions(List<Marker> markers) {
+  LocationOptions _createUserLocationOptions() {
     return LocationOptions(
-      markers: markers,
-      onLocationRequested: (LatLngData ld) {
-        if (ld == null || ld.location == null) {
-          return;
-        }
-        _mapController?.move(ld.location, 16.0);
-      },
-      buttonBuilder: (BuildContext context,
-          ValueNotifier<LocationServiceStatus> status, Function onPressed) {
+      (BuildContext context, ValueNotifier<LocationServiceStatus> status,
+          Function onPressed) {
         return Align(
           alignment: Alignment.bottomRight,
           child: Padding(
@@ -223,6 +214,12 @@ class _GeoMapWidgetState extends State<GeoMapWidget> {
             ),
           ),
         );
+      },
+      onLocationRequested: (LatLngData ld) {
+        if (ld == null || ld.location == null) {
+          return;
+        }
+        _mapController?.move(ld.location, 16.0);
       },
     );
     // return UserLocationOptions(
