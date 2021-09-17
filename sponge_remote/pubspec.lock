@@ -447,7 +447,7 @@ packages:
       path: "../../sponge_client_dart"
       relative: true
     source: path
-    version: "1.17.0"
+    version: "1.18.0"
   sponge_flutter_api:
     dependency: "direct main"
     description:
@@ -461,7 +461,7 @@ packages:
       path: "../../sponge_grpc_client_dart"
       relative: true
     source: path
-    version: "1.17.0"
+    version: "1.18.0"
   stack_trace:
     dependency: transitive
     description:

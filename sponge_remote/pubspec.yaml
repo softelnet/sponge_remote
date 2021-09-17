@@ -1,6 +1,6 @@
 name: sponge_remote
 description: A Sponge Remote base library.
-version: 0.17.0
+version: 0.18.0
 homepage: https://github.com/softelnet/sponge_remote/sponge_remote
 
 publish_to: none
@@ -13,9 +13,9 @@ dependencies:
     sdk: flutter
 
   # TODO Specify the version number with overwrite.
-  sponge_flutter_api: ^0.17.0
-  sponge_client_dart: ^1.17.0
-  sponge_grpc_client_dart: ^1.17.0
+  sponge_flutter_api: ^0.18.0
+  sponge_client_dart: ^1.18.0
+  sponge_grpc_client_dart: ^1.18.0
 
 dependency_overrides:
   # Use the local library if possible.

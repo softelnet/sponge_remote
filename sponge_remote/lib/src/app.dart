@@ -66,6 +66,9 @@ class SpongeRemoteApp extends StatelessWidget {
                         darkTheme: ThemeData(
                           brightness: Brightness.dark,
                           primarySwatch: Colors.teal,
+                          appBarTheme: AppBarTheme.of(context).copyWith(
+                            backgroundColor: Colors.grey[900],
+                          ),
                           floatingActionButtonTheme:
                               FloatingActionButtonThemeData(
                             backgroundColor:

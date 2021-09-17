@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+@Timeout(Duration(seconds: 60))
+
 //import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart';
@@ -307,6 +309,9 @@ void main() {
         await driver.tap(find.text('View the location'));
 
         await driver.tap(find.text('CLOSE'));
+
+        await driver.tap(find.byValueKey('map-menu'));
+        await driver.tap(find.text('Cluster data markers'));
 
         await driver.tap(find.pageBack());
       });

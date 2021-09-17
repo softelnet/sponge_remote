@@ -36,10 +36,10 @@ class AppDrawer extends StatelessWidget {
           if (connectionName != null)
             ListTile(
               title: Align(
+                alignment: Alignment.centerRight,
                 child: Chip(
                   label: Text('$connectionName'),
                 ),
-                alignment: Alignment.centerRight,
               ),
               dense: true,
             ),
