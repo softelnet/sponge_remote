@@ -21,8 +21,8 @@ Future<void> showAboutAppDialog(BuildContext context) async {
   final TextStyle headerTextStyle =
       themeData.textTheme.bodyText2.apply(fontWeightDelta: 2);
   final TextStyle aboutTextStyle = themeData.textTheme.bodyText2;
-  final TextStyle linkStyle =
-      themeData.textTheme.bodyText2.copyWith(color: themeData.accentColor);
+  final TextStyle linkStyle = themeData.textTheme.bodyText2
+      .copyWith(color: themeData.colorScheme.secondary);
   final TextStyle noteTextStyle =
       themeData.textTheme.bodyText2.apply(color: getSecondaryColor(context));
 

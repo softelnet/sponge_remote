@@ -124,10 +124,9 @@ class MobileListTypeGuiProvider extends ListTypeGuiProvider {
 
       return TextButton.icon(
         key: Key('open-map'),
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(
-              Theme.of(editorContext.context).primaryColor),
-          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+        style: TextButton.styleFrom(
+          primary: Colors.white,
+          backgroundColor: Theme.of(editorContext.context).primaryColor,
         ),
         label: Text(label?.toUpperCase() ?? 'MAP'),
         icon: Icon(
